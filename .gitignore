@@ -2,7 +2,6 @@ bin
 build
 TerrariaAssets*
 .settings
-launch4j
 releases
 *.log
 .metadata
