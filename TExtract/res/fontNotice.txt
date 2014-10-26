@@ -1,0 +1,2 @@
+See BMFont (http://www.angelcode.com/products/bmfont/doc/file_format.html)
+I am not sure the files are properly converted so they match Terraria's fonts

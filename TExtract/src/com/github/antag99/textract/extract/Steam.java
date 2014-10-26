@@ -1,0 +1,137 @@
+package com.github.antag99.textract.extract;
+
+import java.io.File;
+import java.util.Map.Entry;
+
+public final class Steam {
+	private Steam() {
+	}
+	
+	public static File correctUserDirectory(File path) {
+		// Making this function recursive can result in stack overflow...
+		boolean found = false;
+		
+		File result = null;
+		
+		while(!found) {
+			result = seekTerrariaDirectory(path);
+			if(result == null) {
+				result = seekSteamDirectory(path);
+			}
+			if(result == null) {
+				result = seekSteamParent(path);
+			}
+			// Try with the parent directory
+			if(result == null) {
+				path = path.getParentFile();
+			} else {
+				found = true;
+			}
+		}
+		
+		return result;
+	}
+	
+	public static File findTerrariaDirectory() {
+		try {
+			// Try to find steam parent directories
+			for(File root : File.listRoots()) {
+				// Search inside program & 'game' directories
+				for(File rootChild : root.listFiles()) {
+					if(rootChild.getName().toLowerCase().contains("program") ||
+							rootChild.getName().toLowerCase().contains("game")) {
+						File result = seekSteamParent(rootChild);
+						if(result != null) {
+							return result;
+						}
+					}
+				}
+				
+				// Try to find steam directory inside root
+				File result = seekSteamParent(root);
+				if(result != null) {
+					return result;
+				}
+			}
+			
+			// Try to find relevant environment variables
+			for(Entry<String, String> environmentVariable : System.getenv().entrySet()) {
+				if(environmentVariable.getKey().toLowerCase().contains("terraria") |
+						environmentVariable.getKey().toLowerCase().contains("tapi")) {
+					
+					File result = seekTerrariaDirectory(new File(environmentVariable.getValue()));
+					if(result != null) {
+						return result;
+					}
+				} else if(environmentVariable.getKey().toLowerCase().contains("steam")) {
+					File result = seekSteamDirectory(new File(environmentVariable.getValue()));
+					if(result != null) {
+						return result;
+					}
+				}
+			}
+		} catch(Exception ex) {
+			// Do not fail because of an exception, but prompt the user and log the error
+			ex.printStackTrace();
+		}
+		
+		// If nothing other works, then prompt the user
+		return null;
+	}
+	
+	private static File seekSteamParent(File parent) {
+		if(parent == null || !parent.isDirectory()) {
+			return null;
+		}
+		
+		File[] parentFiles = parent.listFiles();
+		
+		if(parentFiles == null) {
+			return null;
+		}
+		
+		for(File child : parentFiles) {
+			if(child.getName().toLowerCase().contains("steam")) {
+				File result = seekSteamDirectory(child);
+				if(result != null) {
+					return result;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private static File seekSteamDirectory(File steamDirectory) {
+		if(steamDirectory == null || !steamDirectory.isDirectory()) {
+			return null;
+		}
+		
+		File steamApps = new File(steamDirectory, "SteamApps");
+		File common = new File(steamApps, "Common");
+		
+		// We might've ended up inside a SteamApps directory
+		if(!steamApps.exists()) {
+			common = new File(steamDirectory, "Common");
+		}
+		
+		File terraria = new File(common, "Terraria");
+		
+		return seekTerrariaDirectory(terraria);
+	}
+	
+	private static File seekTerrariaDirectory(File terrariaDirectory) {
+		if(terrariaDirectory == null || !terrariaDirectory.isDirectory()) {
+			return null;
+		}
+		
+		File terrariaExe = new File(terrariaDirectory, "Terraria.exe");
+		File contentDirectory = new File(terrariaDirectory, "Content");
+		
+		if(terrariaExe.exists() && contentDirectory.exists()) {
+			return terrariaDirectory;
+		}
+		
+		return null;
+	}
+}
