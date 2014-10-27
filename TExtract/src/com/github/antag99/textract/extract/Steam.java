@@ -34,6 +34,19 @@ public final class Steam {
 	
 	public static File findTerrariaDirectory() {
 		try {
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				// Check the windows registry for steam installation path
+				try {
+					String steamPath = WinRegistry.readString(WinRegistry.HKEY_CURRENT_USER,
+							"Software\\Valve\\Steam", "SteamPath");
+					File result = seekSteamDirectory(new File(steamPath));
+					if(result != null) {
+						return result;
+					}
+				} catch(Throwable ignored) {
+				}
+			}
+			
 			// Try to find steam parent directories
 			for(File root : File.listRoots()) {
 				// Search inside program & 'game' directories
