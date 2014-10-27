@@ -6,3 +6,4 @@ releases
 *.log
 .metadata
 launch4j.xml
+.recommenders
