@@ -5,3 +5,4 @@ TerrariaAssets*
 releases
 *.log
 .metadata
+launch4j.xml
