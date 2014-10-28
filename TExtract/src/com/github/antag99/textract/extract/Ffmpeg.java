@@ -15,6 +15,7 @@ class Ffmpeg {
 
 	private static final String cmd;
 	private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
+	private static final boolean isLinux = System.getProperty("os.name").toLowerCase().contains("nux");
 
 	static {
 		// Non-windows users will have to install ffmpeg
@@ -53,11 +54,11 @@ class Ffmpeg {
 		StringBuilder command = new StringBuilder();
 		command.append(cmd);
 		command.append(" -i ");
-		if(isWindows) {
+		if(!isLinux) {
 			command.append('"');
 		}
 		command.append(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(input.getAbsolutePath())));
-		if(isWindows) {
+		if(!isLinux) {
 			command.append('"');
 		}
 		command.append(" ");
@@ -67,11 +68,11 @@ class Ffmpeg {
 		command.append(' ');
 		command.append("-ab 128k");
 		command.append(" ");
-		if(isWindows) {
+		if(!isLinux) {
 			command.append('"');
 		}
 		command.append(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(output.getAbsolutePath())));
-		if(isWindows) {
+		if(!isLinux) {
 			command.append('"');
 		}
 		
