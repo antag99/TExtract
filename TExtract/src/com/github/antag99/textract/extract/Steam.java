@@ -13,7 +13,7 @@ public final class Steam {
 		
 		File result = null;
 		
-		while(!found) {
+		while(!found && path != null) {
 			result = seekTerrariaDirectory(path);
 			if(result == null) {
 				result = seekSteamDirectory(path);
