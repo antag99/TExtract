@@ -3,6 +3,8 @@ package com.github.antag99.textract.extract;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -51,35 +53,21 @@ class Ffmpeg {
 	}
 
 	public static void convert(File input, File output) {
-		StringBuilder command = new StringBuilder();
-		command.append(cmd);
-		command.append(" -i ");
-		if(!isLinux) {
-			command.append('"');
-		}
-		command.append(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(input.getAbsolutePath())));
-		if(!isLinux) {
-			command.append('"');
-		}
-		command.append(" ");
-		command.append("-acodec pcm_s16le");
-		command.append(' ');
-		command.append("-nostdin");
-		command.append(' ');
-		command.append("-ab 128k");
-		command.append(" ");
-		if(!isLinux) {
-			command.append('"');
-		}
-		command.append(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(output.getAbsolutePath())));
-		if(!isLinux) {
-			command.append('"');
-		}
-		
-		logger.debug("Executing " + command);
+		List<String> command = new ArrayList<String>();
+		command.add(cmd);
+		command.add("-i");
+		command.add(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(input.getAbsolutePath())));
+		command.add("-acodec");
+		command.add("pcm_s16le");
+		command.add("-nostdin");
+		command.add("-ab");
+		command.add("128k");
+		command.add(FilenameUtils.separatorsToSystem(FilenameUtils.normalize(output.getAbsolutePath())));
+
+		ProcessBuilder builder = new ProcessBuilder(command);
 
 		try {
-			Process process = Runtime.getRuntime().exec(command.toString());
+			Process process = builder.start();
 			if(process.waitFor() != 0) {
 				logger.error("Ffmpeg exited with abnormal exit code: " + process.exitValue());
 			}
