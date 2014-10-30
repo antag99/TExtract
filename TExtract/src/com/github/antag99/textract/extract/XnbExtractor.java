@@ -169,9 +169,17 @@ public class XnbExtractor {
 					int height = buffer.getInt();
 					
 					// Mip count
-					buffer.getInt();
+					int mipCount = buffer.getInt();
 					// Size
-					buffer.getInt();
+					int size = buffer.getInt();
+					
+					if(mipCount != 1) {
+						logger.warn("Unexpected mipCount: " + mipCount);
+					}
+					
+					if(size != width * height * 4) {
+						logger.warn("Unexpected size: " + size);
+					}
 					
 					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
 					
