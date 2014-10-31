@@ -1,7 +1,6 @@
 package com.github.antag99.textract.extract;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
