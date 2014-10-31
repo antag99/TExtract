@@ -17,7 +17,6 @@ class Ffmpeg {
 
 	private static final String cmd;
 	private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
-	private static final boolean isLinux = System.getProperty("os.name").toLowerCase().contains("nux");
 
 	static {
 		// Non-windows users will have to install ffmpeg

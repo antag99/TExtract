@@ -1,6 +1,7 @@
 package com.github.antag99.textract.extract;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
@@ -165,8 +166,8 @@ public class XnbExtractor {
 				case "Microsoft.Xna.Framework.Content.Texture2DReader": {
 					int surfaceFormat = buffer.getInt();
 					
-					int width = buffer.getInt();
-					int height = buffer.getInt();
+					final int width = buffer.getInt();
+					final int height = buffer.getInt();
 					
 					// Mip count
 					int mipCount = buffer.getInt();
@@ -181,14 +182,28 @@ public class XnbExtractor {
 						logger.warn("Unexpected size: " + size);
 					}
 					
-					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
-					
 					if(surfaceFormat != SURFACEFORMAT_COLOR) {
 						logger.error("Unsupported surface format: " + surfaceFormat);
 						continue;
 					}
 					
-					FileUtils.writeByteArrayToFile(output, PNGEncoder.toPNG(width, height, buffer));
+					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
+					
+					BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+					for(int y = 0; y < height; ++y) {
+						for(int x = 0; x < width; ++x) {
+							// Convert RGBA to ARGB
+							int r = buffer.get() & 0xff;
+							int g = buffer.get() & 0xff;
+							int b = buffer.get() & 0xff;
+							int a = buffer.get() & 0xff;
+							
+							image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
+						}
+					}
+					
+					ImageIO.write(image, "png", output);
+					
 					break;
 				}
 				case "Microsoft.Xna.Framework.Content.SoundEffectReader": {
