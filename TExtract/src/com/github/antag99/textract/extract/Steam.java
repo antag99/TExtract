@@ -10,11 +10,11 @@ public final class Steam {
 		// Check the windows registry for steam installation path
 		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
 			try {
-				String steamPath = WinRegistry.readString(WinRegistry.HKEY_CURRENT_USER,
-						"Software\\Valve\\Steam", "SteamPath");
-				File steamDirectory = new File(steamPath);
-				if (isTerrariaDirectory(steamDirectory)) {
-					return steamDirectory;
+				String terrariaPath = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE,
+						"SOFTWARE\\Re-Logic\\Terraria", "Install_Path");
+				File terrariaDirectory = new File(terrariaPath);
+				if (isTerrariaDirectory(terrariaDirectory)) {
+					return terrariaDirectory;
 				}
 			} catch (Throwable ignored) {
 			}
