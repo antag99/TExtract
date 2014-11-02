@@ -125,9 +125,9 @@ public class ExtractorGUI extends Extractor implements Runnable, StatusReporter 
 				return;
 			}
 			
-			if(!Steam.isTerrariaDirectory(terrariaDirectory)) {
+			if(!new File(terrariaDirectory, "Content").isDirectory()) {
 				JOptionPane.showMessageDialog(frame, "Invalid terraria installation directory.\n"
-						+ "Couldn't find 'Content' folder and Terraria.exe", "Error", JOptionPane.ERROR_MESSAGE);
+						+ "Couldn't find 'Content' folder", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}

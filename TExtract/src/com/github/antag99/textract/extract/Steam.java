@@ -113,10 +113,9 @@ public final class Steam {
 			return null;
 		}
 		
-		File terrariaExe = new File(terrariaDirectory, "Terraria.exe");
 		File contentDirectory = new File(terrariaDirectory, "Content");
 		
-		if(terrariaExe.exists() && contentDirectory.exists()) {
+		if(contentDirectory.exists()) {
 			return terrariaDirectory;
 		}
 		
