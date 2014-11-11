@@ -120,14 +120,14 @@ public class ExtractorGUI extends Extractor implements Runnable, StatusReporter 
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			
 			if(chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				terrariaDirectory = Steam.correctUserDirectory(chooser.getSelectedFile());
+				terrariaDirectory = chooser.getSelectedFile();
 			} else {
 				return;
 			}
 			
-			if(!new File(terrariaDirectory, "Content").exists()) {
+			if(!new File(terrariaDirectory, "Content").isDirectory()) {
 				JOptionPane.showMessageDialog(frame, "Invalid terraria installation directory.\n"
-						+ "No 'Content' folder found.", "Error", JOptionPane.ERROR_MESSAGE);
+						+ "Couldn't find 'Content' folder", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}

@@ -7,33 +7,21 @@ public final class Steam {
 	private Steam() {
 	}
 	
-	public static File correctUserDirectory(File path) {
-		// Making this function recursive can result in stack overflow...
-		boolean found = false;
-		
-		File result = null;
-		
-		while(!found) {
-			result = seekTerrariaDirectory(path);
-			if(result == null) {
-				result = seekSteamDirectory(path);
-			}
-			if(result == null) {
-				result = seekSteamParent(path);
-			}
-			// Try with the parent directory
-			if(result == null) {
-				path = path.getParentFile();
-			} else {
-				found = true;
-			}
-		}
-		
-		return result;
-	}
-	
 	public static File findTerrariaDirectory() {
 		try {
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				// Check the windows registry for steam installation path
+				try {
+					String steamPath = WinRegistry.readString(WinRegistry.HKEY_CURRENT_USER,
+							"Software\\Valve\\Steam", "SteamPath");
+					File result = seekSteamDirectory(new File(steamPath));
+					if(result != null) {
+						return result;
+					}
+				} catch(Throwable ignored) {
+				}
+			}
+			
 			// Try to find steam parent directories
 			for(File root : File.listRoots()) {
 				// Search inside program & 'game' directories
@@ -125,10 +113,9 @@ public final class Steam {
 			return null;
 		}
 		
-		File terrariaExe = new File(terrariaDirectory, "Terraria.exe");
 		File contentDirectory = new File(terrariaDirectory, "Content");
 		
-		if(terrariaExe.exists() && contentDirectory.exists()) {
+		if(contentDirectory.exists()) {
 			return terrariaDirectory;
 		}
 		

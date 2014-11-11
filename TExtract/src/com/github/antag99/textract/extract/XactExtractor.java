@@ -28,39 +28,39 @@ public class XactExtractor {
 
 	/** Mapping of music wave bank indexes to their names */
 	static final String[] trackNames = {
-		"overworld_night", //1
-		"eerie", //2
-		"overworld_day", //3
-		"boss1", //4
-		"title_screen", //5
-		"jungle", //6
-		"corruption", //7
-		"hallow", //8
-		"underground_corruption", //9
-		"underground_hallow", //10
-		"boss2", //11
-		"underground", //12
-		"boss3", //13
-		"snow", //14
-		"space", //15
-		"crimson", //16
-		"golem", //17
-		"alternate_day", //18
-		"rain", //19
-		"underground_snow", //20
-		"desert", //21
-		"ocean", //22
-		"dungeon", //23
-		"plantera", //24
-		"queen_bee", //25
-		"lizhard", //26
-		"eclipse", //27
-		"rain_ambient", //28
-		"mushrooms", //29
-		"pumpkin_moon", //30
-		"alternate_underground", //31
-		"frost_moon", //32
-		"underground_crimson" //33
+		"OverworldNight", //1
+		"Eerie", //2
+		"OverworldDay", //3
+		"Boss1", //4
+		"TitleScreen", //5
+		"Jungle", //6
+		"Corruption", //7
+		"Hallow", //8
+		"UndergroundCorruption", //9
+		"UndergroundHallow", //10
+		"Boss2", //11
+		"Underground", //12
+		"Boss3", //13
+		"Snow", //14
+		"Space", //15
+		"Crimson", //16
+		"Golem", //17
+		"AlternateDay", //18
+		"Rain", //19
+		"UndergroundSnow", //20
+		"Desert", //21
+		"Ocean", //22
+		"Dungeon", //23
+		"Plantera", //24
+		"QueenBee", //25
+		"Lizhard", //26
+		"Eclipse", //27
+		"RainAmbience", //28
+		"Mushrooms", //29
+		"PumpkinMoon", //30
+		"AlternateUnderground", //31
+		"FrostMoon", //32
+		"UndergroundCrimson" //33
 	};
 
 	private static final int Flag_Compact = 0x00020000;

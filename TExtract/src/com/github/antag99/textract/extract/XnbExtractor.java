@@ -165,22 +165,44 @@ public class XnbExtractor {
 				case "Microsoft.Xna.Framework.Content.Texture2DReader": {
 					int surfaceFormat = buffer.getInt();
 					
-					int width = buffer.getInt();
-					int height = buffer.getInt();
+					final int width = buffer.getInt();
+					final int height = buffer.getInt();
 					
 					// Mip count
-					buffer.getInt();
+					int mipCount = buffer.getInt();
 					// Size
-					buffer.getInt();
+					int size = buffer.getInt();
 					
-					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
+					if(mipCount != 1) {
+						logger.warn("Unexpected mipCount: " + mipCount);
+					}
+					
+					if(size != width * height * 4) {
+						logger.warn("Unexpected size: " + size);
+					}
 					
 					if(surfaceFormat != SURFACEFORMAT_COLOR) {
 						logger.error("Unsupported surface format: " + surfaceFormat);
 						continue;
 					}
 					
-					FileUtils.writeByteArrayToFile(output, PNGEncoder.toPNG(width, height, buffer));
+					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
+					
+					BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+					for(int y = 0; y < height; ++y) {
+						for(int x = 0; x < width; ++x) {
+							// Convert RGBA to ARGB
+							int r = buffer.get() & 0xff;
+							int g = buffer.get() & 0xff;
+							int b = buffer.get() & 0xff;
+							int a = buffer.get() & 0xff;
+							
+							image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
+						}
+					}
+					
+					ImageIO.write(image, "png", output);
+					
 					break;
 				}
 				case "Microsoft.Xna.Framework.Content.SoundEffectReader": {
