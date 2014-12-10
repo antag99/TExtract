@@ -1,11 +1,17 @@
+## Eclipse
 bin
-build
-TerrariaAssets*
-.settings
-releases
-*.log
 .metadata
-launch4j.xml
 .recommenders
+.project
+.classpath
+.settings
+
+## Gradle
 build
 .gradle
+
+## TExtract
+TerrariaAssets*
+releases
+*.log
+launch4j.xml
