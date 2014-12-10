@@ -1,6 +1,6 @@
 TExtract
 ==================
-An extractor for Terraria's content files
+An extractor for Terraria's content files.
 See http://forums.terraria.org/index.php?threads/textract-extract-terrarias-content-files.937/ for more information.
 
 Building from source
