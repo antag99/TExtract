@@ -1,10 +1,8 @@
 package com.github.antag99.textract.extract;
 
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
 
 /*
  * This file was taken from https://code.google.com/p/jwow-kit/,
@@ -71,7 +69,7 @@ class Dxt3 {
 
 	public static BufferedImage getBufferedImage(int width, int height, ByteBuffer bb) {
 		bb.order(ByteOrder.LITTLE_ENDIAN);
-		
+
 		int[] pixels = new int[16];
 		int[] alphas = new int[16];
 

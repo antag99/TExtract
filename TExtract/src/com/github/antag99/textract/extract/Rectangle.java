@@ -2,7 +2,7 @@ package com.github.antag99.textract.extract;
 
 class Rectangle {
 	public float x, y, width, height;
-	
+
 	public Rectangle() {
 	}
 

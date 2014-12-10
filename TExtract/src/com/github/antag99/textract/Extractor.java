@@ -8,25 +8,25 @@ import com.github.antag99.textract.extract.XactExtractor;
 import com.github.antag99.textract.extract.XnbExtractor;
 
 public class Extractor {
-//	private static final Logger logger = LogManager.getLogger(Extractor.class);
-	
+	// private static final Logger logger = LogManager.getLogger(Extractor.class);
+
 	private XnbExtractor xnbExtractor;
 	private XactExtractor xactExtractor;
 
 	private File contentDirectory;
 	private File outputDirectory;
-	
+
 	protected StatusReporter statusReporter = StatusReporter.mutedReporter;
 
 	public Extractor() {
 		xnbExtractor = new XnbExtractor();
 		xactExtractor = new XactExtractor();
 	}
-	
+
 	public StatusReporter getStatusReporter() {
 		return statusReporter;
 	}
-	
+
 	public void setStatusReporter(StatusReporter statusReporter) {
 		this.statusReporter = statusReporter;
 		xnbExtractor.setStatusReporter(statusReporter);
@@ -61,7 +61,7 @@ public class Extractor {
 
 		try {
 			FileUtils.copyInputStreamToFile(ExtractorGUI.class.getResourceAsStream("/fontNotice.txt"), new File(outputDirectory, "Fonts/README.txt"));
-		} catch(Throwable t) {
+		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}

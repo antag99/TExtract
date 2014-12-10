@@ -21,33 +21,33 @@ class Ffmpeg {
 	static {
 		// Non-windows users will have to install ffmpeg
 		String tmpCmd = "ffmpeg";
-		
-		if(isWindows) {
+
+		if (isWindows) {
 			File ffmpegExecutable = null;
 			try {
 				// Try to create a temporary file for the executable
 				ffmpegExecutable = File.createTempFile("ffmpeg", ".exe");
-			} catch(IOException ex) {
+			} catch (IOException ex) {
 				// Dump the executable in the local directory instead
 				ffmpegExecutable = new File("ffmpeg.exe");
 			}
-			
+
 			URL ffmpegExecutableResource = Ffmpeg.class.getResource("/ffmpeg.exe");
-			
-			if(ffmpegExecutableResource == null) {
+
+			if (ffmpegExecutableResource == null) {
 				throw new RuntimeException("ffmpeg.exe not found in classpath");
 			}
-			
+
 			try {
 				FileUtils.copyURLToFile(ffmpegExecutableResource, ffmpegExecutable);
-				
+
 				tmpCmd = ffmpegExecutable.getAbsolutePath();
-			} catch(IOException ex) {
+			} catch (IOException ex) {
 				logger.error("Failed to copy ffmpeg executable!");
 				// We can still try, the user might have ffmpeg installed
 			}
 		}
-		
+
 		cmd = tmpCmd;
 	}
 
@@ -67,12 +67,12 @@ class Ffmpeg {
 
 		try {
 			Process process = builder.start();
-			if(process.waitFor() != 0) {
+			if (process.waitFor() != 0) {
 				logger.error("Ffmpeg exited with abnormal exit code: " + process.exitValue());
 			}
 			IOUtils.copy(process.getErrorStream(), System.err);
 			IOUtils.copy(process.getInputStream(), System.out);
-		} catch(Throwable ex) {
+		} catch (Throwable ex) {
 			logger.error("An error has occured when executing ffmpeg", ex);
 		}
 	}
