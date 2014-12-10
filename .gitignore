@@ -7,3 +7,5 @@ releases
 .metadata
 launch4j.xml
 .recommenders
+build
+.gradle
