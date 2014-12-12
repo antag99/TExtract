@@ -11,4 +11,4 @@ which can then be imported from eclipse.
 Contributing
 ==================
 Make sure to include the license headers and to use the eclipse formatter.
-Templates to automatically insert the headers are in TExtract/eclipse-templates.xml
+Templates to automatically insert the headers are in eclipse-templates.xml.
