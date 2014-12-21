@@ -29,19 +29,12 @@
  ******************************************************************************/
 package com.github.antag99.textract.extract;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
@@ -57,7 +50,6 @@ public class XnbExtractor {
 	private static final Logger logger = LogManager.getLogger(XnbExtractor.class);
 
 	private static final int SURFACEFORMAT_COLOR = 0;
-	private static final int SURFACEFORMAT_DXT3 = 5;
 	private static final int HEADER_SIZE = 14;
 
 	// WAV Encoding
@@ -281,66 +273,6 @@ public class XnbExtractor {
 					out.write(buffer.array(), buffer.arrayOffset() + buffer.position(), dataChunkSize);
 
 					out.close();
-					break;
-				}
-				case "Microsoft.Xna.Framework.Content.SpriteFontReader": {
-					if (Xnb.get7BitEncodedInt(buffer) == 0) {
-						logger.error("Sprite font texture is null");
-					} else {
-						int surfaceFormat = buffer.getInt();
-
-						int width = buffer.getInt();
-						int height = buffer.getInt();
-
-						// Mip count
-						buffer.getInt();
-						// Size
-						buffer.getInt();
-
-						File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
-
-						if (surfaceFormat != SURFACEFORMAT_DXT3) {
-							logger.error("Unexpected surface format: " + surfaceFormat);
-							continue;
-						}
-
-						BufferedImage image = Dxt3.getBufferedImage(width, height, buffer);
-						OutputStream out = FileUtils.openOutputStream(output);
-						ImageIO.write(image, "png", out);
-						out.close();
-					}
-
-					File fntOutput = new File(outputDirectory, fileNameWithoutExtension + ".fnt");
-
-					List<Rectangle> glyphs = new ArrayList<Rectangle>();
-					Xnb.getList(buffer, glyphs, Rectangle.class);
-
-					List<Rectangle> cropping = new ArrayList<Rectangle>();
-					Xnb.getList(buffer, cropping, Rectangle.class);
-
-					Xnb.get7BitEncodedInt(buffer);
-					int mapSize = buffer.getInt();
-					List<Character> characterMap = new ArrayList<Character>(mapSize);
-					for (int k = 0; k < mapSize; ++k) {
-						characterMap.add(Xnb.getCSharpChar(buffer));
-					}
-
-					int verticalLineSpacing = buffer.getInt();
-					float horozontalSpacing = buffer.getFloat();
-
-					List<Vector3> kerning = new ArrayList<Vector3>();
-					Xnb.getList(buffer, kerning, Vector3.class);
-
-					// Read default character, but ignore it
-					if (buffer.get() != 0) { // Boolean
-						Xnb.getCSharpChar(buffer);
-					}
-
-					// Write the font!
-					BufferedWriter writer = new BufferedWriter(new FileWriter(fntOutput));
-					BMFont.writeBMFont(fileNameWithoutExtension, glyphs, cropping, kerning,
-							characterMap, verticalLineSpacing, horozontalSpacing, writer);
-					writer.close();
 					break;
 				}
 				default: {
