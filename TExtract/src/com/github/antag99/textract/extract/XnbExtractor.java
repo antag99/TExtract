@@ -47,6 +47,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import ar.com.hjg.pngj.ImageInfo;
+import ar.com.hjg.pngj.ImageLineByte;
+import ar.com.hjg.pngj.PngWriter;
+
 import com.github.antag99.textract.StatusReporter;
 
 public class XnbExtractor {
@@ -217,21 +221,18 @@ public class XnbExtractor {
 
 					File output = new File(outputDirectory, fileNameWithoutExtension + ".png");
 
-					BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-					for (int y = 0; y < height; ++y) {
-						for (int x = 0; x < width; ++x) {
-							// Convert RGBA to ARGB
-							int r = buffer.get() & 0xff;
-							int g = buffer.get() & 0xff;
-							int b = buffer.get() & 0xff;
-							int a = buffer.get() & 0xff;
+					ImageInfo imageInfo = new ImageInfo(width, height, 8, true);
+					PngWriter writer = new PngWriter(output, imageInfo);
 
-							image.setRGB(x, y, (a << 24) | (r << 16) | (g << 8) | b);
-						}
+					byte[] scanline = new byte[width * 4];
+					ImageLineByte imageLine = new ImageLineByte(imageInfo, scanline);
+
+					for (int y = 0; y < height; ++y) {
+						buffer.get(scanline);
+						writer.writeRow(imageLine);
 					}
 
-					ImageIO.write(image, "png", output);
-
+					writer.close();
 					break;
 				}
 				case "Microsoft.Xna.Framework.Content.SoundEffectReader": {

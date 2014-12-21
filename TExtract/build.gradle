@@ -19,4 +19,5 @@ dependencies {
     // The older Log4j is used
     compile "log4j:log4j:1.2.17"
     compile "commons-io:commons-io:2.4"
+    compile "ar.com.hjg:pngj:2.0.1"
 }
