@@ -1,4 +1,4 @@
-## TExtract ![Build Status](https://drone.io/github.com/Antag99/TExtract/status.png)
+## TExtract [![Build Status](https://travis-ci.org/Antag99/TExtract.svg)](https://travis-ci.org/Antag99/TExtract)
 TExtract is an extractor for [Terraria](http://terraria.org)s content files, which
 are compiled to the XNB format. Only the things needed to extract Terrarias files
 are implemented, so don't expect it to work for other games without modification.

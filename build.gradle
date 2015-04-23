@@ -1,0 +1,39 @@
+
+project(":TExtract") {
+  apply plugin: 'java'
+  apply plugin: 'eclipse'
+  apply plugin: 'idea'
+
+  sourceCompatibility = 1.7
+  version = '1.3.3'
+
+  sourceSets.main.java.srcDirs = [ "src/" ]
+  sourceSets.main.resources.srcDirs = [ "res/" ]
+  sourceSets.test.java.srcDirs = [ "tests/" ]
+
+  ext {
+    mainClassName = "com.github.antag99.textract.TExtract"
+  }
+
+  repositories {
+      mavenCentral()
+  }
+
+  dependencies {
+      // The older Log4j is used
+      compile "log4j:log4j:1.2.17"
+      compile "commons-io:commons-io:2.4"
+      compile "ar.com.hjg:pngj:2.0.1"
+  }
+
+  task fatJar(type: Jar) {
+    manifest {
+          attributes 'Implementation-Title': 'TExtract',  
+            'Implementation-Version': version,
+            'Main-Class': mainClassName
+      }
+      baseName = project.name
+      from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+      with jar
+  }
+}
