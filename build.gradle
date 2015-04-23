@@ -28,11 +28,12 @@ project(":TExtract") {
 
   task fatJar(type: Jar) {
     manifest {
-          attributes 'Implementation-Title': 'TExtract',  
+          attributes 'Implementation-Title': project.name,  
             'Implementation-Version': version,
             'Main-Class': mainClassName
       }
-      baseName = project.name
+      // baseName = project.name
+      archiveName = project.name + ".jar"
       from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
       with jar
   }
