@@ -7,3 +7,4 @@ deploy:
   file: "./TExtract/build/libs/TExtract.jar"
   on:
     repo: Antag99/TExtract
+    tags: true
