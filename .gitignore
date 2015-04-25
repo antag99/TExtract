@@ -11,7 +11,6 @@ build
 .gradle
 
 ## TExtract
+lib/launch4j*
 TerrariaAssets*
-releases
 *.log
-launch4j.xml

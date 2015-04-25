@@ -1,11 +1,58 @@
 
 buildscript {
-    repositories {
-        flatDir dirs: "./lib/"
+  repositories {
+    flatDir dirs: "./lib/"
+    jcenter()
+  }
+  dependencies {
+    classpath ":proguard"
+    classpath 'de.undercouch:gradle-download-task:1.2'
+  }
+}
+
+apply plugin: 'de.undercouch.download'
+
+import de.undercouch.gradle.tasks.download.Download
+
+
+// Installs Launch4j into the local directory
+task installLaunch4j() {
+  if (!new File(rootDir, "lib/launch4j/").exists()) {
+    def os = System.getProperty("os.name")
+    if (os.contains("Windows")) {
+      def zip = new File(rootDir, "lib/launch4j-3.7-win32.zip")
+      download {
+        src "https://antag99.github.io/launch4j-3.7-win32.zip"
+        dest zip
+      }
+      copy {
+        from zipTree(zip)
+        into new File(rootDir, "lib")
+      }
+    } else if (os.contains("Linux")) {
+      def tar = new File(rootDir, "lib/launch4j-3.7-linux.tgz")
+      download {
+        src "https://antag99.github.io/launch4j-3.7-linux.tgz"
+        dest tar
+      }
+      copy {
+        from tarTree(tar)
+        into new File(rootDir, "lib")
+      }
+    } else if (os.contains("Mac")) {
+      def tar = new File(rootDir, "lib/launch4j-3.7-macosx-x86-10.8.tgz")
+      download {
+        src "https://antag99.github.io/launch4j-3.7-macosx-x86-10.8.tgz"
+        dest tar
+      }
+      copy {
+        from tarTree(tar)
+        into new File(rootDir, "lib")
+      }
+    } else {
+      throw new RuntimeException("Launch4j is not available for: " + os)
     }
-    dependencies {
-        classpath ":proguard"
-    }
+  }
 }
 
 project(":TExtract") {
@@ -33,43 +80,36 @@ project(":TExtract") {
       compile "ar.com.hjg:pngj:2.0.1"
   }
 
+
   // Creates a fat jar containing all dependencies
   task fatJar(type: Jar) {
     manifest {
-          attributes 'Implementation-Title': project.name,  
-            'Implementation-Version': version,
-            'Main-Class': mainClassName
-      }
-      // baseName = project.name
-      archiveName = project.name + "Fat.jar"
-      from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-      with jar
+      attributes 'Implementation-Title': project.name,
+        'Implementation-Version': version,
+        'Main-Class': mainClassName
+    }
+    archiveName = project.name + "Fat.jar"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
   }
 
   // Shrinks the fat jar using proguard
-  task optimizedJar(type: proguard.gradle.ProGuardTask) {
-    /*injars  "/TExtract/build/libs/TExtract.jar"
-    outjars "./TExtract/build/libs/TExtract_Optimized.jar"
-
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-    printmapping "TExtract/build/proguard.map"
-
-    overloadaggressively
-    repackageclasses ""
-    allowaccessmodification
-
-    keep "public class com.github.antag99.textract.TExtract { \
-        public static void main(java.lang.String[]); \
-    }"*/
-
+  task optimizedJar(dependsOn: fatJar, type: proguard.gradle.ProGuardTask) {
     configuration "configuration.pro"
-  }
-  optimizedJar.dependsOn fatJar
 
-  // Creates a version notice
-  task createVersionFile() {
-    new File("build/VERSION.txt").text = version + "\n"
+    // Gradle always seems to think the task is up-to-date, this is a workaround.
+    outputs.upToDateWhen { false }
   }
 
-  build.dependsOn createVersionFile
+  // Create a version notice
+  processResources.doFirst {
+    new File(buildDir, "VERSION.txt").text = version + "\n"
+  }
+
+  // Creates an executable file using Launch4j
+  task launch4j(dependsOn: [ optimizedJar, installLaunch4j ], type: JavaExec) {
+    args "launch4j.xml"
+    classpath new File(rootDir, "lib/launch4j/launch4j.jar")
+    main = "net.sf.launch4j.Main"
+  }
 }
