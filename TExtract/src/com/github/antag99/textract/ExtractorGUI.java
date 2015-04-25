@@ -22,7 +22,8 @@
  ******************************************************************************/
 package com.github.antag99.textract;
 
-import java.awt.Font;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -30,167 +31,138 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import com.github.antag99.textract.extract.Steam;
 
-public class ExtractorGUI extends Extractor implements Runnable, StatusReporter {
+public class ExtractorGUI {
+	private Extractor extractor;
 	private JFrame frame;
-
 	private JPanel contentPane;
-	private JProgressBar currentProgressBar;
-	private JProgressBar overallProgressBar;
-	private JLabel statusLabel;
+	private JPanel panel;
 
-	private JLabel overallStatusLabel;
-	private JButton btnFinish;
-	private JButton btnCancel;
+	private ConfigurationPanel configurationPanel;
+	private ExtractionPanel extractionPanel;
+	private FinishmentPanel finishmentPanel;
+
+	private JButton okButton;
+	private JButton cancelButton;
 
 	public ExtractorGUI() {
-		super();
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Throwable ex) {
+		configurationPanel = new ConfigurationPanel();
+		extractionPanel = new ExtractionPanel();
+		finishmentPanel = new FinishmentPanel();
+
+		extractor = new Extractor();
+		extractor.setStatusReporter(extractionPanel);
+
+		// Set system-specific look and feel when not on Linux
+		if (System.getProperty("os.name").indexOf("Linux") == -1) {
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch (Throwable ex) {
+				ex.printStackTrace();
+			}
 		}
 
-		setStatusReporter(this);
 		frame = new JFrame();
-		frame.setResizable(false);
 		frame.setTitle("TExtract");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setBounds(100, 100, 450, 180);
+		frame.setResizable(true);
 
 		try {
-			frame.setIconImage(ImageIO.read(ExtractorGUI.class.getResourceAsStream("/icon.png")));
-		} catch (IOException ignored) {
+			frame.setIconImage(ImageIO.read(getClass().getResource("/icon.png")));
+		} catch (IOException ex) {
+			ex.printStackTrace();
 		}
 
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		frame.setContentPane(contentPane);
+		contentPane.setLayout(new BorderLayout(0, 0));
 
-		SpringLayout layout = new SpringLayout();
-		contentPane.setLayout(layout);
+		JPanel buttonPanel = new JPanel();
+		contentPane.add(buttonPanel, BorderLayout.SOUTH);
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 
-		overallStatusLabel = new JLabel("Extracting Content...");
-		overallStatusLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 11));
-		layout.putConstraint(SpringLayout.NORTH, overallStatusLabel, 10, SpringLayout.NORTH, contentPane);
-		layout.putConstraint(SpringLayout.WEST, overallStatusLabel, 0, SpringLayout.WEST, contentPane);
-		contentPane.add(overallStatusLabel);
-
-		overallProgressBar = new JProgressBar();
-		layout.putConstraint(SpringLayout.NORTH, overallProgressBar, 6, SpringLayout.SOUTH, overallStatusLabel);
-		layout.putConstraint(SpringLayout.WEST, overallProgressBar, 0, SpringLayout.WEST, overallStatusLabel);
-		layout.putConstraint(SpringLayout.SOUTH, overallProgressBar, 27, SpringLayout.SOUTH, overallStatusLabel);
-		layout.putConstraint(SpringLayout.EAST, overallProgressBar, -15, SpringLayout.EAST, contentPane);
-		contentPane.add(overallProgressBar);
-
-		statusLabel = new JLabel("...");
-		statusLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 11));
-		layout.putConstraint(SpringLayout.NORTH, statusLabel, 6, SpringLayout.SOUTH, overallProgressBar);
-		layout.putConstraint(SpringLayout.WEST, statusLabel, 0, SpringLayout.WEST, overallStatusLabel);
-		contentPane.add(statusLabel);
-
-		currentProgressBar = new JProgressBar();
-		layout.putConstraint(SpringLayout.NORTH, currentProgressBar, 6, SpringLayout.SOUTH, statusLabel);
-		layout.putConstraint(SpringLayout.WEST, currentProgressBar, 0, SpringLayout.WEST, contentPane);
-		layout.putConstraint(SpringLayout.SOUTH, currentProgressBar, 27, SpringLayout.SOUTH, statusLabel);
-		layout.putConstraint(SpringLayout.EAST, currentProgressBar, 0, SpringLayout.EAST, overallProgressBar);
-		contentPane.add(currentProgressBar);
-
-		btnFinish = new JButton("Finish");
-		btnFinish.setEnabled(false);
-		btnFinish.addActionListener(new ActionListener() {
+		cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
 		});
-		layout.putConstraint(SpringLayout.SOUTH, btnFinish, 0, SpringLayout.SOUTH, contentPane);
-		layout.putConstraint(SpringLayout.EAST, btnFinish, 0, SpringLayout.EAST, contentPane);
-		contentPane.add(btnFinish);
+		buttonPanel.add(cancelButton);
 
-		btnCancel = new JButton("Cancel");
-		btnCancel.addActionListener(new ActionListener() {
+		okButton = new JButton("OK");
+		okButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
+				if (getPanel() == configurationPanel) {
+					okButton.setText("Finish");
+					okButton.setEnabled(false);
+
+					extractor.setInputDirectory(configurationPanel.getInputDirectory());
+					extractor.setOutputDirectory(configurationPanel.getOutputDirectory());
+					finishmentPanel.setOutputDirectory(configurationPanel.getOutputDirectory());
+
+					setPanel(extractionPanel);
+
+					new Thread() {
+						@Override
+						public void run() {
+							extractor.extract();
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									okButton.setEnabled(true);
+									cancelButton.setVisible(false);
+									setPanel(finishmentPanel);
+								}
+							});
+						}
+					}.start();
+				} else if (getPanel() == finishmentPanel) {
+					System.exit(0);
+				}
 			}
 		});
-		layout.putConstraint(SpringLayout.NORTH, btnCancel, 0, SpringLayout.NORTH, btnFinish);
-		layout.putConstraint(SpringLayout.EAST, btnCancel, -6, SpringLayout.WEST, btnFinish);
-		contentPane.add(btnCancel);
+		buttonPanel.add(okButton);
+	}
+
+	private void setPanel(JPanel panel) {
+		if (this.panel != null)
+			contentPane.remove(this.panel);
+		this.panel = panel;
+		contentPane.add(panel, BorderLayout.CENTER);
+	}
+
+	public JPanel getPanel() {
+		return panel;
 	}
 
 	public void start() {
-		new Thread(this).start();
-	}
+		setPanel(configurationPanel);
 
-	@Override
-	public void run() {
-		File terrariaDirectory = Steam.findTerrariaDirectory();
-		if (terrariaDirectory == null) {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogTitle("Select Terraria Installation Directory");
-			chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-			if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				terrariaDirectory = chooser.getSelectedFile();
-			} else {
-				return;
-			}
-
-			if (!new File(terrariaDirectory, "Content").isDirectory()) {
-				JOptionPane.showMessageDialog(frame, "Invalid terraria installation directory.\n"
-						+ "Couldn't find 'Content' folder", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+		// Try to find the Terraria installation directory
+		File inputDirectory = Steam.findTerrariaDirectory();
+		if (inputDirectory != null && new File(inputDirectory, "Content").isDirectory()) {
+			configurationPanel.setInputDirectory(new File(inputDirectory, "Content"));
 		}
 
-		frame.setVisible(true);
-
+		// Find possible output directory
 		File outputDirectory = new File("TerrariaAssets");
 		int counter = 2;
 		while (outputDirectory.exists())
 			outputDirectory = new File("TerrariaAssets_" + counter++);
 
-		setContentDirectory(new File(terrariaDirectory, "Content"));
-		setOutputDirectory(outputDirectory);
+		configurationPanel.setOutputDirectory(outputDirectory);
 
-		extract();
-
-		overallStatusLabel.setText("Done! Extracted files are located in " + outputDirectory.getPath() + ".");
-		statusLabel.setVisible(false);
-		currentProgressBar.setVisible(false);
-
-		btnFinish.setEnabled(true);
-		btnCancel.setEnabled(false);
-	}
-
-	@Override
-	public void reportTaskStatus(String status) {
-		statusLabel.setText(status);
-	}
-
-	@Override
-	public void reportTaskPercentage(float percentage) {
-		currentProgressBar.setValue((int) (percentage * currentProgressBar.getMaximum()));
-	}
-
-	@Override
-	public void reportTask(String task) {
-		overallStatusLabel.setText(task);
-	}
-
-	@Override
-	public void reportPercentage(float percentage) {
-		overallProgressBar.setValue((int) (percentage * overallProgressBar.getMaximum()));
+		frame.setVisible(true);
 	}
 }

@@ -31,12 +31,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 class Ffmpeg {
-	private static final Logger logger = LogManager.getLogger(Ffmpeg.class);
-
 	private static final String cmd;
 	private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
 
@@ -65,7 +61,7 @@ class Ffmpeg {
 
 				tmpCmd = ffmpegExecutable.getAbsolutePath();
 			} catch (IOException ex) {
-				logger.error("Failed to copy ffmpeg executable!");
+				System.err.println("Failed to copy ffmpeg executable!");
 				// We can still try, the user might have ffmpeg installed
 			}
 		}
@@ -90,12 +86,13 @@ class Ffmpeg {
 		try {
 			Process process = builder.start();
 			if (process.waitFor() != 0) {
-				logger.error("Ffmpeg exited with abnormal exit code: " + process.exitValue());
+				System.err.println("Ffmpeg exited with abnormal exit code: " + process.exitValue());
 			}
 			IOUtils.copy(process.getErrorStream(), System.err);
 			IOUtils.copy(process.getInputStream(), System.out);
 		} catch (Throwable ex) {
-			logger.error("An error has occured when executing ffmpeg", ex);
+			System.err.println("An error has occured when executing ffmpeg:");
+			ex.printStackTrace();
 		}
 	}
 }

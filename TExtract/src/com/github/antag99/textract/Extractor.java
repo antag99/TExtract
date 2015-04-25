@@ -23,6 +23,7 @@
 package com.github.antag99.textract;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.github.antag99.textract.extract.XactExtractor;
 import com.github.antag99.textract.extract.XnbExtractor;
@@ -31,14 +32,98 @@ public class Extractor {
 	private XnbExtractor xnbExtractor;
 	private XactExtractor xactExtractor;
 
-	private File contentDirectory;
+	private File inputDirectory;
 	private File outputDirectory;
 
-	protected StatusReporter statusReporter = StatusReporter.mutedReporter;
+	private StatusReporter statusReporter = StatusReporter.mutedReporter;
+
+	// Counters used for percentage bars
+	private long processedBytes = 0;
+	private long totalBytes = 0;
 
 	public Extractor() {
 		xnbExtractor = new XnbExtractor();
-		xactExtractor = new XactExtractor();
+		xactExtractor = new XactExtractor() {
+			@Override
+			protected void status(String status) {
+				statusReporter.reportTaskStatus(status);
+			}
+
+			@Override
+			protected void percentage(float percentage) {
+				statusReporter.reportTaskPercentage(percentage);
+			}
+		};
+	}
+
+	public void extract() {
+		totalBytes = count(inputDirectory);
+		traverse(inputDirectory, outputDirectory);
+	}
+
+	/**
+	 * @param directory The directory to count files inside
+	 */
+	private int count(File directory) {
+		File[] files = directory.listFiles();
+		int bytes = 0;
+		for (File file : files)
+			if (file.isFile())
+				bytes += file.length();
+			else
+				bytes += count(file);
+		return bytes;
+	}
+
+	/**
+	 * @param input The input directory to traverse
+	 * @param output The output directory corresponding to the input directory
+	 */
+	private void traverse(File input, File output) {
+		String relativePath = input.getAbsolutePath().substring(inputDirectory.getAbsolutePath().length());
+		if (relativePath.length() > 0)
+			relativePath = relativePath.substring(1);
+		statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/");
+
+		File[] files = input.listFiles();
+
+		for (int i = 0; i < files.length; ++i) {
+			File file = files[i];
+
+			statusReporter.reportTaskPercentage((float) i / (float) files.length);
+			statusReporter.reportTaskStatus(file.getName());
+
+			statusReporter.reportOverallPercentage((float) ((double) processedBytes / (double) totalBytes));
+			processedBytes += file.length();
+
+			if (file.getName().endsWith(".xnb")) {
+				output.mkdirs();
+				try {
+					xnbExtractor.extract(file, output);
+				} catch (IOException ex) {
+					throw new RuntimeException("An unexpected I/O error has occured", ex);
+				}
+			} else if (file.getName().endsWith(".xwb")) {
+				statusReporter.reportOverallStatus("Extracting files from " +
+						(relativePath.length() > 0 ? relativePath + "/" : "") + file.getName());
+				try {
+					String directoryName = file.getName().substring(0, file.getName().lastIndexOf('.'));
+					File directory = new File(output, directoryName);
+					directory.mkdirs();
+					xactExtractor.extract(file, directory);
+				} catch (IOException ex) {
+					throw new RuntimeException("An unexpected I/O error has occured", ex);
+				}
+
+				// Restore status message
+				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
+			} else if (file.isDirectory()) {
+				traverse(file, new File(output, file.getName()));
+
+				// Restore status message
+				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
+			}
+		}
 	}
 
 	public StatusReporter getStatusReporter() {
@@ -47,39 +132,14 @@ public class Extractor {
 
 	public void setStatusReporter(StatusReporter statusReporter) {
 		this.statusReporter = statusReporter;
-		xnbExtractor.setStatusReporter(statusReporter);
-		xactExtractor.setStatusReporter(statusReporter);
 	}
 
-	public void extract() {
-		int taskCount = 3;
-		int currentTask = 1;
-
-		statusReporter.reportPercentage((float) currentTask++ / (float) taskCount);
-		statusReporter.reportTask("Extracting Images");
-		xnbExtractor.setInputDirectory(new File(contentDirectory, "Images"));
-		xnbExtractor.setOutputDirectory(new File(outputDirectory, "Images"));
-		xnbExtractor.extract();
-
-		statusReporter.reportPercentage((float) currentTask++ / (float) taskCount);
-		statusReporter.reportTask("Extracting Sounds");
-		xnbExtractor.setInputDirectory(new File(contentDirectory, "Sounds"));
-		xnbExtractor.setOutputDirectory(new File(outputDirectory, "Sounds"));
-		xnbExtractor.extract();
-
-		statusReporter.reportPercentage((float) currentTask++ / (float) taskCount);
-		statusReporter.reportTask("Extracting Music");
-		xactExtractor.setInputFile(new File(contentDirectory, "Wave Bank.xwb"));
-		xactExtractor.setOutputDirectory(new File(outputDirectory, "Music"));
-		xactExtractor.extract();
+	public void setInputDirectory(File inputDirectory) {
+		this.inputDirectory = inputDirectory;
 	}
 
-	public void setContentDirectory(File contentDirectory) {
-		this.contentDirectory = contentDirectory;
-	}
-
-	public File getContentDirectory() {
-		return contentDirectory;
+	public File getInputDirectory() {
+		return inputDirectory;
 	}
 
 	public void setOutputDirectory(File outputDirectory) {

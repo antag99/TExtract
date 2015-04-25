@@ -24,7 +24,7 @@ package com.github.antag99.textract;
 
 public interface StatusReporter {
 	public static StatusReporter mutedReporter = new StatusReporter() {
-		public void reportTask(String task) {
+		public void reportOverallStatus(String status) {
 		}
 
 		public void reportTaskStatus(String status) {
@@ -33,7 +33,7 @@ public interface StatusReporter {
 		public void reportTaskPercentage(float percentage) {
 		}
 
-		public void reportPercentage(float percentage) {
+		public void reportOverallPercentage(float percentage) {
 		}
 	};
 
@@ -41,7 +41,7 @@ public interface StatusReporter {
 
 	void reportTaskPercentage(float percentage);
 
-	void reportTask(String task);
+	void reportOverallStatus(String status);
 
-	void reportPercentage(float percentage);
+	void reportOverallPercentage(float percentage);
 }

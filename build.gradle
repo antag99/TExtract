@@ -1,4 +1,13 @@
 
+buildscript {
+    repositories {
+        flatDir dirs: "./lib/"
+    }
+    dependencies {
+        classpath ":proguard"
+    }
+}
+
 project(":TExtract") {
   apply plugin: 'java'
   apply plugin: 'eclipse'
@@ -20,12 +29,11 @@ project(":TExtract") {
   }
 
   dependencies {
-      // The older Log4j is used
-      compile "log4j:log4j:1.2.17"
       compile "commons-io:commons-io:2.4"
       compile "ar.com.hjg:pngj:2.0.1"
   }
 
+  // Creates a fat jar containing all dependencies
   task fatJar(type: Jar) {
     manifest {
           attributes 'Implementation-Title': project.name,  
@@ -33,8 +41,35 @@ project(":TExtract") {
             'Main-Class': mainClassName
       }
       // baseName = project.name
-      archiveName = project.name + ".jar"
+      archiveName = project.name + "Fat.jar"
       from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
       with jar
   }
+
+  // Shrinks the fat jar using proguard
+  task optimizedJar(type: proguard.gradle.ProGuardTask) {
+    /*injars  "/TExtract/build/libs/TExtract.jar"
+    outjars "./TExtract/build/libs/TExtract_Optimized.jar"
+
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    printmapping "TExtract/build/proguard.map"
+
+    overloadaggressively
+    repackageclasses ""
+    allowaccessmodification
+
+    keep "public class com.github.antag99.textract.TExtract { \
+        public static void main(java.lang.String[]); \
+    }"*/
+
+    configuration "configuration.pro"
+  }
+  optimizedJar.dependsOn fatJar
+
+  // Creates a version notice
+  task createVersionFile() {
+    new File("build/VERSION.txt").text = version + "\n"
+  }
+
+  build.dependsOn createVersionFile
 }

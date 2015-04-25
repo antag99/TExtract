@@ -1,10 +1,14 @@
 language: java
-script: "./gradlew fatJar && ./gradlew test"
+script: "./gradlew test && ./gradlew optimizedJar"
 deploy:
   provider: releases
   api_key:
     secure: ZlHpzrjMescn+Loa4AiOHiS0HULei7DggFSdkkPpXSMb4tX9MKOlc8XvwaMFhOR+puQ2plin1sXqLm6LF2vwh07fGoUrZnbca0W4KGJ6NbQc8t72ZJf6K09jj0pfzlCn/op8Qt88b3E7/Pl3oEIvK/6HqEWATZPMJA+CXcI4BSA=
-  file: "./TExtract/build/libs/TExtract.jar"
+  file:
+    - "./TExtract/build/libs/TExtract.jar"
+    - "./TExtract/build/proguard.map"
+    - "./TExtract/build/VERSION.txt"
+    - "./LICENSE.txt"
   on:
     repo: Antag99/TExtract
     tags: true

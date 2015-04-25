@@ -22,16 +22,16 @@
  ******************************************************************************/
 package com.github.antag99.textract.extract;
 
-class Rectangle {
-	public float x, y, width, height;
-
-	public Rectangle() {
+/**
+ * Exception raised by {@link XnbExtractor} and {@link XactExtractor} when an unexpected error has occured.
+ */
+@SuppressWarnings("serial")
+public class XnbException extends RuntimeException {
+	public XnbException(String message) {
+		super(message);
 	}
 
-	public Rectangle(float x, float y, float width, float height) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
+	public XnbException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

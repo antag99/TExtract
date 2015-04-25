@@ -80,8 +80,8 @@ public final class Steam {
 					}
 				}
 			}
-		} catch (Exception ex) {
-			// Do not fail because of an exception, but prompt the user and log the error
+		} catch (Throwable ex) {
+			// Do not fail because of an exception, but log the error
 			ex.printStackTrace();
 		}
 

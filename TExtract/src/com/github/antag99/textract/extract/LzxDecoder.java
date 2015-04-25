@@ -137,8 +137,7 @@ class LzxDecoder {
 		windowSize = 1 << 16;
 		// actualSize = windowSize;
 		window = new byte[windowSize];
-		for (int i = 0; i < windowSize; i++)
-			window[i] = (byte) 0xDC;
+		Arrays.fill(window, (byte) 0xDC);
 		windowPos = 0;
 		mainElementCount = NUM_CHARS + (16 << 4);
 		readHeader = true;
