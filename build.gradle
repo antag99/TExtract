@@ -52,6 +52,10 @@ task installLaunch4j() {
     } else {
       throw new RuntimeException("Launch4j is not available for: " + os)
     }
+
+    // Remove launch4j project files to prevent them from showing up in Eclipse
+    new File(rootDir, "lib/launch4j/.project").delete();
+    new File(rootDir, "lib/launch4j/.classpath").delete();
   }
 }
 
