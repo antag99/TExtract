@@ -16,7 +16,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 
 // Installs Launch4j into the local directory
-task installLaunch4j() {
+task installLaunch4j << {
   if (!new File(rootDir, "lib/launch4j/").exists()) {
     def os = System.getProperty("os.name")
     if (os.contains("Windows")) {
@@ -82,6 +82,7 @@ project(":TExtract") {
   dependencies {
       compile "commons-io:commons-io:2.4"
       compile "ar.com.hjg:pngj:2.0.1"
+      compile "com.github.wendykierp:JTransforms:3.0"
   }
 
 
