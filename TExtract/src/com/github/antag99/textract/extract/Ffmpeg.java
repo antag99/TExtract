@@ -70,6 +70,17 @@ class Ffmpeg {
 	}
 
 	public static void convert(File input, File output) {
+		/*
+		 * Note: From version 1.4, TExtract uses a special version of the
+		 * ffmpeg executable configured with the following options:
+		 * --disable-everything --enable-muxer=wav --enable-encoder=pcm_s16le
+		 * --enable-demuxer=xwma --enable-decoder=wmav2
+		 * --enable-protocol=file --enable-filter=aresample
+		 * It can therefore not resample to another format without
+		 * recompilation with appropriate options. The reason behind this
+		 * is that the original weighted about 27 megabytes, whereas the new
+		 * one weights only 1,5 megabytes.
+		 */
 		List<String> command = new ArrayList<String>();
 		command.add(cmd);
 		command.add("-i");
