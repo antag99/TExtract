@@ -65,7 +65,7 @@ project(":TExtract") {
   apply plugin: 'idea'
 
   sourceCompatibility = 1.7
-  version = '1.3.3'
+  version = '1.4.0'
 
   sourceSets.main.java.srcDirs = [ "src/" ]
   sourceSets.main.resources.srcDirs = [ "res/" ]
@@ -93,7 +93,9 @@ project(":TExtract") {
         'Main-Class': mainClassName
     }
     archiveName = project.name + "Fat.jar"
+    // Add the dependencies
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from new File(buildDir, "VERSION.txt")
     with jar
   }
 
@@ -103,6 +105,13 @@ project(":TExtract") {
 
     // Gradle always seems to think the task is up-to-date, this is a workaround.
     outputs.upToDateWhen { false }
+  }
+
+  // Add the mapping to the obfuscated jar
+  tasks.optimizedJar.doLast {
+    ant.jar(update: "true", index: "true", destfile: "${buildDir}/libs/TExtract.jar") {
+      fileset(file: "$buildDir/proguard.map")
+    }
   }
 
   // Create a version notice
