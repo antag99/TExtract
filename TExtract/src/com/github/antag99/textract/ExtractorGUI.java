@@ -34,7 +34,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import com.github.antag99.textract.extract.Steam;
@@ -59,15 +58,6 @@ public class ExtractorGUI {
 
 		extractor = new Extractor();
 		extractor.setStatusReporter(extractionPanel);
-
-		// Set system-specific look and feel when not on Linux
-		if (System.getProperty("os.name").indexOf("Linux") == -1) {
-			try {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch (Throwable ex) {
-				ex.printStackTrace();
-			}
-		}
 
 		frame = new JFrame();
 		frame.setTitle("TExtract");

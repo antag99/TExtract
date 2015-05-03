@@ -22,8 +22,6 @@
  ******************************************************************************/
 package com.github.antag99.textract;
 
-import java.awt.Font;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -41,8 +39,7 @@ public class ExtractionPanel extends JPanel implements StatusReporter {
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 
-		overallStatusLabel = new JLabel("Extracting Content...");
-		overallStatusLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 11));
+		overallStatusLabel = new JLabel("Extracting Content");
 		layout.putConstraint(SpringLayout.NORTH, overallStatusLabel, 10, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.WEST, overallStatusLabel, 0, SpringLayout.WEST, this);
 		add(overallStatusLabel);
@@ -54,8 +51,7 @@ public class ExtractionPanel extends JPanel implements StatusReporter {
 		layout.putConstraint(SpringLayout.EAST, overallProgressBar, 0, SpringLayout.EAST, this);
 		add(overallProgressBar);
 
-		statusLabel = new JLabel("...");
-		statusLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 11));
+		statusLabel = new JLabel("Preparing...");
 		layout.putConstraint(SpringLayout.NORTH, statusLabel, 6, SpringLayout.SOUTH, overallProgressBar);
 		layout.putConstraint(SpringLayout.WEST, statusLabel, 0, SpringLayout.WEST, overallStatusLabel);
 		add(statusLabel);

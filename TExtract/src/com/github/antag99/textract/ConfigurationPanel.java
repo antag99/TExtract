@@ -32,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.border.EmptyBorder;
 
 @SuppressWarnings("serial")
 public class ConfigurationPanel extends JPanel {
@@ -55,35 +56,41 @@ public class ConfigurationPanel extends JPanel {
 	}
 
 	public ConfigurationPanel() {
+		setBorder(new EmptyBorder(10, 10, 10, 10));
 		SpringLayout springLayout = new SpringLayout();
 		setLayout(springLayout);
 
-		JLabel inputDirectoryLabel = new JLabel("Input directory (XNB files):");
-		springLayout.putConstraint(SpringLayout.NORTH, inputDirectoryLabel, 10, SpringLayout.NORTH, this);
-		springLayout.putConstraint(SpringLayout.WEST, inputDirectoryLabel, 10, SpringLayout.WEST, this);
+		JLabel inputDirectoryLabel = new JLabel("Input directory (usually Terraria's \"Content\" directory)");
+		springLayout.putConstraint(SpringLayout.NORTH, inputDirectoryLabel, 0, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.WEST, inputDirectoryLabel, 0, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, inputDirectoryLabel, 0, SpringLayout.EAST, this);
 		add(inputDirectoryLabel);
 
 		inputDirectory = new JTextField();
-		springLayout.putConstraint(SpringLayout.NORTH, inputDirectory, 6, SpringLayout.SOUTH, inputDirectoryLabel);
-		springLayout.putConstraint(SpringLayout.WEST, inputDirectory, 10, SpringLayout.WEST, this);
-		springLayout.putConstraint(SpringLayout.EAST, inputDirectory, -129, SpringLayout.EAST, this);
-		add(inputDirectory);
-		inputDirectory.setColumns(10);
 
-		JLabel outputDirectoryLabel = new JLabel("Output directory (Resulting files):");
-		springLayout.putConstraint(SpringLayout.NORTH, outputDirectoryLabel, 6, SpringLayout.SOUTH, inputDirectory);
-		springLayout.putConstraint(SpringLayout.WEST, outputDirectoryLabel, 0, SpringLayout.WEST, inputDirectoryLabel);
+		springLayout.putConstraint(SpringLayout.NORTH, inputDirectory, 5, SpringLayout.SOUTH, inputDirectoryLabel);
+		springLayout.putConstraint(SpringLayout.WEST, inputDirectory, 0, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, inputDirectory, 0, SpringLayout.EAST, this);
+		add(inputDirectory);
+		inputDirectory.setColumns(120);
+
+		JLabel outputDirectoryLabel = new JLabel("Output directory (where to put the extracted files)");
+		springLayout.putConstraint(SpringLayout.NORTH, outputDirectoryLabel, 5, SpringLayout.SOUTH, inputDirectory);
+		springLayout.putConstraint(SpringLayout.WEST, outputDirectoryLabel, 0, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, outputDirectoryLabel, 0, SpringLayout.EAST, this);
 		add(outputDirectoryLabel);
 
 		outputDirectory = new JTextField();
-		springLayout.putConstraint(SpringLayout.NORTH, outputDirectory, 6, SpringLayout.SOUTH, outputDirectoryLabel);
-		springLayout.putConstraint(SpringLayout.WEST, outputDirectory, 0, SpringLayout.WEST, inputDirectoryLabel);
-		springLayout.putConstraint(SpringLayout.SOUTH, outputDirectory, 25, SpringLayout.SOUTH, outputDirectoryLabel);
-		springLayout.putConstraint(SpringLayout.EAST, outputDirectory, 0, SpringLayout.EAST, inputDirectory);
+		springLayout.putConstraint(SpringLayout.NORTH, outputDirectory, 5, SpringLayout.SOUTH, outputDirectoryLabel);
+		springLayout.putConstraint(SpringLayout.WEST, outputDirectory, 0, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, outputDirectory, 0, SpringLayout.EAST, this);
 		add(outputDirectory);
-		outputDirectory.setColumns(10);
+		outputDirectory.setColumns(120);
 
 		JButton inputDirectoryButton = new JButton("Browse...");
+		springLayout.putConstraint(SpringLayout.NORTH, inputDirectoryButton, 0, SpringLayout.NORTH, inputDirectory);
+		springLayout.putConstraint(SpringLayout.SOUTH, inputDirectoryButton, 0, SpringLayout.SOUTH, inputDirectory);
+		springLayout.putConstraint(SpringLayout.EAST, inputDirectoryButton, 0, SpringLayout.EAST, this);
 		inputDirectoryButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -97,12 +104,12 @@ public class ConfigurationPanel extends JPanel {
 				}
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, inputDirectoryButton, 0, SpringLayout.NORTH, inputDirectory);
-		springLayout.putConstraint(SpringLayout.WEST, inputDirectoryButton, 17, SpringLayout.EAST, inputDirectory);
-		springLayout.putConstraint(SpringLayout.SOUTH, inputDirectoryButton, 0, SpringLayout.SOUTH, inputDirectory);
 		add(inputDirectoryButton);
 
 		JButton outputDirectoryButton = new JButton("Browse...");
+		springLayout.putConstraint(SpringLayout.NORTH, outputDirectoryButton, 0, SpringLayout.NORTH, outputDirectory);
+		springLayout.putConstraint(SpringLayout.SOUTH, outputDirectoryButton, 0, SpringLayout.SOUTH, outputDirectory);
+		springLayout.putConstraint(SpringLayout.EAST, outputDirectoryButton, 0, SpringLayout.EAST, this);
 		outputDirectoryButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -116,10 +123,9 @@ public class ConfigurationPanel extends JPanel {
 				}
 			}
 		});
-		springLayout.putConstraint(SpringLayout.EAST, inputDirectoryButton, 0, SpringLayout.EAST, outputDirectoryButton);
-		springLayout.putConstraint(SpringLayout.NORTH, outputDirectoryButton, 0, SpringLayout.NORTH, outputDirectory);
-		springLayout.putConstraint(SpringLayout.SOUTH, outputDirectoryButton, 0, SpringLayout.SOUTH, outputDirectory);
-		springLayout.putConstraint(SpringLayout.EAST, outputDirectoryButton, -10, SpringLayout.EAST, this);
 		add(outputDirectoryButton);
+
+		springLayout.putConstraint(SpringLayout.EAST, inputDirectory, -8, SpringLayout.WEST, inputDirectoryButton);
+		springLayout.putConstraint(SpringLayout.EAST, outputDirectory, -8, SpringLayout.WEST, outputDirectoryButton);
 	}
 }
