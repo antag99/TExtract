@@ -23,7 +23,12 @@
 package com.github.antag99.textract;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 
 import com.github.antag99.textract.extract.XactExtractor;
 import com.github.antag99.textract.extract.XnbExtractor;
@@ -57,8 +62,32 @@ public class Extractor {
 	}
 
 	public void extract() {
-		totalBytes = count(inputDirectory);
-		traverse(inputDirectory, outputDirectory);
+		PrintStream stdOut = System.out;
+		PrintStream stdErr = System.err;
+		FileOutputStream logFile = null;
+		try {
+			try {
+				outputDirectory.mkdirs();
+				logFile = new FileOutputStream(new File(outputDirectory, "TExtract.log"));
+				System.setOut(new PrintStream(new TeeOutputStream(stdOut, logFile)));
+				System.setErr(new PrintStream(new TeeOutputStream(stdErr, logFile)));
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				return;
+			}
+
+			totalBytes = count(inputDirectory);
+
+			System.out.println("Input Directory: " + inputDirectory.getAbsolutePath());
+			System.out.println("Output Directory: " + outputDirectory.getAbsolutePath());
+			System.out.println("Total Bytes: " + totalBytes);
+
+			traverse(inputDirectory, outputDirectory);
+		} finally {
+			System.setOut(stdOut);
+			System.setErr(stdErr);
+			IOUtils.closeQuietly(logFile);
+		}
 	}
 
 	/**

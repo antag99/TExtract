@@ -66,6 +66,7 @@ public class ExtractionPanel extends JPanel implements StatusReporter {
 
 	@Override
 	public void reportTaskStatus(String status) {
+		System.out.println(status);
 		statusLabel.setText(status);
 	}
 
@@ -76,6 +77,7 @@ public class ExtractionPanel extends JPanel implements StatusReporter {
 
 	@Override
 	public void reportOverallStatus(String status) {
+		System.out.println("========  " + status + "  ========");
 		overallStatusLabel.setText(status);
 	}
 
