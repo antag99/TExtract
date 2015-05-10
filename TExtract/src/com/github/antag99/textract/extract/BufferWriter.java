@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class BufferWriter {
+class BufferWriter {
 	private ByteBuffer buffer;
 	private OutputStream output;
 

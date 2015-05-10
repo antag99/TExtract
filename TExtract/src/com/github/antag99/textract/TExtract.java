@@ -24,7 +24,7 @@ package com.github.antag99.textract;
 
 import javax.swing.UIManager;
 
-public class TExtract {
+class TExtract {
 	public static void main(String[] args) {
 		// Set system-specific look and feel when not on Linux
 		if (System.getProperty("os.name").indexOf("Linux") == -1) {

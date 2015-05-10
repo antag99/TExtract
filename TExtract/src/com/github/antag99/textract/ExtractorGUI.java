@@ -38,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.github.antag99.textract.extract.Steam;
 
-public class ExtractorGUI {
+class ExtractorGUI {
 	private Extractor extractor;
 	private JFrame frame;
 	private JPanel contentPane;

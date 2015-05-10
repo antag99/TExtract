@@ -35,7 +35,7 @@ import javax.swing.SpringLayout;
 import javax.swing.border.EmptyBorder;
 
 @SuppressWarnings("serial")
-public class ConfigurationPanel extends JPanel {
+class ConfigurationPanel extends JPanel {
 	private JTextField inputDirectory;
 	private JTextField outputDirectory;
 

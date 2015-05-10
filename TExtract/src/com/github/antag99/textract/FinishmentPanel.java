@@ -38,8 +38,7 @@ import javax.swing.SpringLayout;
 import java.awt.Font;
 
 @SuppressWarnings("serial")
-public class FinishmentPanel extends JPanel {
-
+class FinishmentPanel extends JPanel {
 	private File outputDirectory;
 	private JLabel fileLabel;
 

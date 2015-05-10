@@ -28,7 +28,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SpringLayout;
 
 @SuppressWarnings("serial")
-public class ExtractionPanel extends JPanel implements StatusReporter {
+class ExtractionPanel extends JPanel implements StatusReporter {
 	private JProgressBar currentProgressBar;
 	private JProgressBar overallProgressBar;
 	private JLabel statusLabel;
