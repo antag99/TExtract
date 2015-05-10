@@ -167,7 +167,7 @@ public class XnbExtractor {
 				writer.writeRow(imageLine);
 			}
 
-			writer.close();
+			writer.end();
 			break;
 		}
 		case "Microsoft.Xna.Framework.Content.SoundEffectReader": {
