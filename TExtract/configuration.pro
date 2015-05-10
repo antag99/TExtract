@@ -7,6 +7,6 @@
 -repackageclasses ""
 -allowaccessmodification
 
--keep public class com.github.antag99.textract.TExtract {
+-keep class com.github.antag99.textract.TExtract {
     public static void main(java.lang.String[]);
 }
