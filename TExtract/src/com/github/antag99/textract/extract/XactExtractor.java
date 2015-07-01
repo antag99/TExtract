@@ -58,7 +58,13 @@ public class XactExtractor {
 			"PumpkinMoon", // 30
 			"AlternateUnderground", // 31
 			"FrostMoon", // 32
-			"UndergroundCrimson" // 33
+			"UndergroundCrimson", // 33
+			"LunarBoss", // 34
+			"PirateInvasion", // 35
+			"Underworld", // 36
+			"MartianMadness", // 37
+			"MoonLord", // 38
+			"GoblinArmy" // 39
 	};
 
 	public XactExtractor() {
