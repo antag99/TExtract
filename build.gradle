@@ -65,7 +65,7 @@ project(":TExtract") {
   apply plugin: 'idea'
 
   sourceCompatibility = 1.7
-  version = '1.4.1'
+  version = '1.4.2'
 
   sourceSets.main.java.srcDirs = [ "src/" ]
   sourceSets.main.resources.srcDirs = [ "res/" ]
