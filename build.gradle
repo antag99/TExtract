@@ -76,14 +76,14 @@ project(":TExtract") {
   }
 
   repositories {
-      mavenCentral()
+    mavenCentral()
   }
 
   dependencies {
     compile "commons-io:commons-io:2.4"
     compile "ar.com.hjg:pngj:2.0.1"
+    compile "com.esotericsoftware:minlog:1.3.0"
   }
-
 
   // Creates a fat jar containing all dependencies
   task fatJar(type: Jar) {

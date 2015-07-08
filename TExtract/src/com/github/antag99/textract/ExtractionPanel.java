@@ -27,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SpringLayout;
 
+import com.esotericsoftware.minlog.Log;
+
 @SuppressWarnings("serial")
 class ExtractionPanel extends JPanel implements StatusReporter {
 	private JProgressBar currentProgressBar;
@@ -66,7 +68,7 @@ class ExtractionPanel extends JPanel implements StatusReporter {
 
 	@Override
 	public void reportTaskStatus(String status) {
-		System.out.println(status);
+		Log.trace(status);
 		statusLabel.setText(status);
 	}
 
@@ -77,7 +79,7 @@ class ExtractionPanel extends JPanel implements StatusReporter {
 
 	@Override
 	public void reportOverallStatus(String status) {
-		System.out.println("========  " + status + "  ========");
+		Log.info(status);
 		overallStatusLabel.setText(status);
 	}
 

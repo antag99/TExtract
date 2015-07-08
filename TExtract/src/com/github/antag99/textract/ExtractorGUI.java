@@ -27,7 +27,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import com.esotericsoftware.minlog.Log;
 import com.github.antag99.textract.extract.Steam;
 
 class ExtractorGUI {
@@ -67,8 +68,8 @@ class ExtractorGUI {
 
 		try {
 			frame.setIconImage(ImageIO.read(getClass().getResource("/icon.png")));
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (Throwable ex) {
+			Log.error("Error setting frame icon", ex);
 		}
 
 		contentPane = new JPanel();
@@ -97,7 +98,7 @@ class ExtractorGUI {
 					okButton.setText("Finish");
 					okButton.setEnabled(false);
 
-					extractor.setInputDirectory(configurationPanel.getInputDirectory());
+					extractor.getInputFiles().addAll(Arrays.asList(configurationPanel.getInputDirectory().listFiles()));
 					extractor.setOutputDirectory(configurationPanel.getOutputDirectory());
 					finishmentPanel.setOutputDirectory(configurationPanel.getOutputDirectory());
 
@@ -134,6 +135,14 @@ class ExtractorGUI {
 
 	public JPanel getPanel() {
 		return panel;
+	}
+
+	public boolean isLogFileEnabled() {
+		return extractor.isLogFileEnabled();
+	}
+
+	public void setLogFileEnabled(boolean logFileEnabled) {
+		extractor.setLogFileEnabled(logFileEnabled);
 	}
 
 	public void start() {

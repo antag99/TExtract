@@ -32,6 +32,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.esotericsoftware.minlog.Log;
+
 class Ffmpeg {
 	private static final String cmd;
 	private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
@@ -60,8 +62,8 @@ class Ffmpeg {
 				FileUtils.copyURLToFile(ffmpegExecutableResource, ffmpegExecutable);
 
 				tmpCmd = ffmpegExecutable.getAbsolutePath();
-			} catch (IOException ex) {
-				System.err.println("Failed to copy ffmpeg executable!");
+			} catch (Throwable ex) {
+				Log.error("Failed to copy ffmpeg executable!", ex);
 				// We can still try, the user might have ffmpeg installed
 			}
 		}
@@ -97,13 +99,12 @@ class Ffmpeg {
 		try {
 			Process process = builder.start();
 			if (process.waitFor() != 0) {
-				System.err.println("Ffmpeg exited with abnormal exit code: " + process.exitValue());
+				Log.error("Ffmpeg exited with abnormal exit code: " + process.exitValue());
 			}
-			IOUtils.copy(process.getErrorStream(), System.err);
-			IOUtils.copy(process.getInputStream(), System.out);
+			Log.debug(IOUtils.toString(process.getErrorStream()));
+			Log.debug(IOUtils.toString(process.getInputStream()));
 		} catch (Throwable ex) {
-			System.err.println("An error has occured when executing ffmpeg:");
-			ex.printStackTrace();
+			Log.error("An error occured when executing ffmpeg", ex);
 		}
 	}
 }

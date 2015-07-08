@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -36,9 +38,9 @@ import com.github.antag99.textract.extract.XnbExtractor;
 public class Extractor {
 	private XnbExtractor xnbExtractor;
 	private XactExtractor xactExtractor;
-
-	private File inputDirectory;
+	private boolean logFileEnabled;
 	private File outputDirectory;
+	private List<File> inputFiles = new ArrayList<File>();
 
 	private StatusReporter statusReporter = StatusReporter.mutedReporter;
 
@@ -66,91 +68,96 @@ public class Extractor {
 		PrintStream stdErr = System.err;
 		FileOutputStream logFile = null;
 		try {
-			try {
-				outputDirectory.mkdirs();
-				logFile = new FileOutputStream(new File(outputDirectory, "TExtract.log"));
-				System.setOut(new PrintStream(new TeeOutputStream(stdOut, logFile)));
-				System.setErr(new PrintStream(new TeeOutputStream(stdErr, logFile)));
-			} catch (IOException ex) {
-				ex.printStackTrace();
-				return;
+			File outputDirectory = this.outputDirectory;
+			// If output directory is not specified, default to working directory
+			if (outputDirectory == null) {
+				outputDirectory = new File(".");
 			}
 
-			totalBytes = count(inputDirectory);
+			if (logFileEnabled) {
+				try {
+					outputDirectory.mkdirs();
+					logFile = new FileOutputStream(new File(outputDirectory, "TExtract.log"));
+					System.setOut(new PrintStream(new TeeOutputStream(stdOut, logFile)));
+					System.setErr(new PrintStream(new TeeOutputStream(stdErr, logFile)));
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					return;
+				}
+			}
 
-			System.out.println("Input Directory: " + inputDirectory.getAbsolutePath());
-			System.out.println("Output Directory: " + outputDirectory.getAbsolutePath());
-			System.out.println("Total Bytes: " + totalBytes);
+			for (File inputFile : inputFiles)
+				totalBytes += count(inputFile);
 
-			traverse(inputDirectory, outputDirectory);
+			for (File inputFile : inputFiles)
+				traverse(inputFile, inputFile.getParentFile(), outputDirectory);
 		} finally {
-			System.setOut(stdOut);
-			System.setErr(stdErr);
-			IOUtils.closeQuietly(logFile);
+			if (logFileEnabled) {
+				System.setOut(stdOut);
+				System.setErr(stdErr);
+				IOUtils.closeQuietly(logFile);
+			}
 		}
 	}
 
 	/**
-	 * @param directory The directory to count files inside
+	 * @param file The file to compute the size of
 	 */
-	private int count(File directory) {
-		File[] files = directory.listFiles();
+	private int count(File file) {
 		int bytes = 0;
-		for (File file : files)
-			if (file.isFile())
-				bytes += file.length();
-			else
-				bytes += count(file);
+		if (file.isDirectory()) {
+			for (File child : file.listFiles())
+				bytes += child.length();
+		} else {
+			bytes += file.length();
+		}
 		return bytes;
 	}
 
 	/**
-	 * @param input The input directory to traverse
-	 * @param output The output directory corresponding to the input directory
+	 * @param inputFile The input file to traverse
+	 * @param inputRoot The root of the input file, for better status messages
+	 * @param outputDirectory The output directory to put extracted files in
 	 */
-	private void traverse(File input, File output) {
-		String relativePath = input.getAbsolutePath().substring(inputDirectory.getAbsolutePath().length());
+	private void traverse(File inputFile, File inputRoot, File outputDirectory) {
+		String relativePath = inputFile.getAbsolutePath().substring(inputRoot.getAbsolutePath().length());
 		if (relativePath.length() > 0)
 			relativePath = relativePath.substring(1);
-		statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/");
 
-		File[] files = input.listFiles();
+		if (inputFile.isDirectory()) {
+			statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/*");
+			outputDirectory = new File(outputDirectory, inputFile.getName());
+			File[] files = inputFile.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				File child = files[i];
 
-		for (int i = 0; i < files.length; ++i) {
-			File file = files[i];
+				statusReporter.reportTaskPercentage((float) i / (float) files.length);
+				statusReporter.reportTaskStatus(child.getName());
 
-			statusReporter.reportTaskPercentage((float) i / (float) files.length);
-			statusReporter.reportTaskStatus(file.getName());
+				statusReporter.reportOverallPercentage((float) ((double) processedBytes / (double) totalBytes));
+				processedBytes += child.length();
 
-			statusReporter.reportOverallPercentage((float) ((double) processedBytes / (double) totalBytes));
-			processedBytes += file.length();
-
-			if (file.getName().endsWith(".xnb")) {
-				output.mkdirs();
+				traverse(child, inputRoot, outputDirectory);
+			}
+		} else {
+			if (inputFile.getName().endsWith(".xnb")) {
+				outputDirectory.mkdirs();
 				try {
-					xnbExtractor.extract(file, output);
+					xnbExtractor.extract(inputFile, outputDirectory);
 				} catch (IOException ex) {
 					throw new RuntimeException("An unexpected I/O error has occured", ex);
 				}
-			} else if (file.getName().endsWith(".xwb")) {
+			} else if (inputFile.getName().endsWith(".xwb")) {
 				statusReporter.reportOverallStatus("Extracting files from " +
-						(relativePath.length() > 0 ? relativePath + "/" : "") + file.getName());
+						(relativePath.length() > 0 ? relativePath + "/" : ""));
 				try {
-					String directoryName = file.getName().substring(0, file.getName().lastIndexOf('.'));
-					File directory = new File(output, directoryName);
+					String directoryName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
+					File directory = new File(outputDirectory, directoryName);
 					directory.mkdirs();
-					xactExtractor.extract(file, directory);
+					xactExtractor.extract(inputFile, directory);
 				} catch (IOException ex) {
 					throw new RuntimeException("An unexpected I/O error has occured", ex);
 				}
-
-				// Restore status message
-				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
-			} else if (file.isDirectory()) {
-				traverse(file, new File(output, file.getName()));
-
-				// Restore status message
-				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
 			}
 		}
 	}
@@ -163,19 +170,23 @@ public class Extractor {
 		this.statusReporter = statusReporter;
 	}
 
-	public void setInputDirectory(File inputDirectory) {
-		this.inputDirectory = inputDirectory;
-	}
-
-	public File getInputDirectory() {
-		return inputDirectory;
-	}
-
 	public void setOutputDirectory(File outputDirectory) {
 		this.outputDirectory = outputDirectory;
 	}
 
 	public File getOutputDirectory() {
 		return outputDirectory;
+	}
+
+	public List<File> getInputFiles() {
+		return inputFiles;
+	}
+
+	public boolean isLogFileEnabled() {
+		return logFileEnabled;
+	}
+
+	public void setLogFileEnabled(boolean logFileEnabled) {
+		this.logFileEnabled = logFileEnabled;
 	}
 }
