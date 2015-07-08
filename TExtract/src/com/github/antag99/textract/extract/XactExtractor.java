@@ -26,45 +26,45 @@ public class XactExtractor {
 
 	/** Mapping of music wave bank indexes to their names */
 	static final String[] trackNames = {
-			"OverworldNight", // 1
-			"Eerie", // 2
-			"OverworldDay", // 3
-			"Boss1", // 4
-			"TitleScreen", // 5
-			"Jungle", // 6
-			"Corruption", // 7
-			"Hallow", // 8
-			"UndergroundCorruption", // 9
-			"UndergroundHallow", // 10
-			"Boss2", // 11
-			"Underground", // 12
-			"Boss3", // 13
-			"Snow", // 14
-			"Space", // 15
-			"Crimson", // 16
-			"Golem", // 17
-			"AlternateDay", // 18
-			"Rain", // 19
-			"UndergroundSnow", // 20
-			"Desert", // 21
-			"Ocean", // 22
-			"Dungeon", // 23
-			"Plantera", // 24
-			"QueenBee", // 25
-			"Lizhard", // 26
-			"Eclipse", // 27
-			"RainAmbience", // 28
-			"Mushrooms", // 29
-			"PumpkinMoon", // 30
-			"AlternateUnderground", // 31
-			"FrostMoon", // 32
-			"UndergroundCrimson", // 33
-			"LunarBoss", // 34
-			"PirateInvasion", // 35
-			"Underworld", // 36
-			"MartianMadness", // 37
-			"MoonLord", // 38
-			"GoblinArmy" // 39
+			"01_OverworldNight",
+			"02_Eerie",
+			"03_OverworldDay",
+			"04_Boss1",
+			"05_TitleScreen",
+			"06_Jungle",
+			"07_Corruption",
+			"08_Hallow",
+			"09_UndergroundCorruption",
+			"10_UndergroundHallow",
+			"11_Boss2",
+			"12_Underground",
+			"13_Boss3",
+			"14_Snow",
+			"15_Space",
+			"16_Crimson",
+			"17_Golem",
+			"18_AlternateDay",
+			"19_Rain",
+			"20_UndergroundSnow",
+			"21_Desert",
+			"22_Ocean",
+			"23_Dungeon",
+			"24_Plantera",
+			"25_QueenBee",
+			"26_Lizhard",
+			"27_Eclipse",
+			"28_RainAmbience",
+			"29_Mushrooms",
+			"30_PumpkinMoon",
+			"31_AlternateUnderground",
+			"32_FrostMoon",
+			"33_UndergroundCrimson",
+			"34_LunarBoss",
+			"35_PirateInvasion",
+			"36_Underworld",
+			"37_MartianMadness",
+			"38_MoonLord",
+			"39_GoblinArmy",
 	};
 
 	public XactExtractor() {
@@ -138,7 +138,7 @@ public class XactExtractor {
 
 		int playregion_offset = segmentOffsets[4];
 		for (int current_entry = 0; current_entry < EntryCount; current_entry++) {
-			String track = current_entry < trackNames.length ? trackNames[current_entry] : "Unknown_" + ((current_entry - trackNames.length) + 1);
+			String track = current_entry < trackNames.length ? trackNames[current_entry] : ((current_entry - trackNames.length) + 1) + "_Unknown";
 
 			status("Extracting " + track);
 			percentage(0.1f + (0.9f / EntryCount) * current_entry);
