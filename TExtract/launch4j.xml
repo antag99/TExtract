@@ -5,7 +5,6 @@
   <jar>build/libs/TExtract.jar</jar>
   <outfile>build/libs/TExtract.exe</outfile>
   <errTitle></errTitle>
-  <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
