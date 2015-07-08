@@ -155,10 +155,11 @@ class ExtractorGUI {
 		}
 
 		// Find possible output directory
-		File outputDirectory = new File("TerrariaAssets");
-		int counter = 2;
-		while (outputDirectory.exists())
-			outputDirectory = new File("TerrariaAssets_" + counter++);
+		int counter = 0;
+		File outputDirectory;
+		do {
+			outputDirectory = new File(counter + "_TerrariaAssets");
+		} while (outputDirectory.exists());
 
 		configurationPanel.setOutputDirectory(outputDirectory);
 
