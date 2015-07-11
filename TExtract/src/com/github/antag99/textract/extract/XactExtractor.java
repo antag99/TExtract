@@ -138,7 +138,7 @@ public class XactExtractor {
 
 		int playregion_offset = segmentOffsets[4];
 		for (int current_entry = 0; current_entry < EntryCount; current_entry++) {
-			String track = current_entry < trackNames.length ? trackNames[current_entry] : ((current_entry - trackNames.length) + 1) + "_Unknown";
+			String track = current_entry < trackNames.length ? trackNames[current_entry] : (current_entry + 1) + "_Unknown";
 
 			status("Extracting " + track);
 			percentage(0.1f + (0.9f / EntryCount) * current_entry);
