@@ -24,6 +24,14 @@ public class XactExtractor {
 
 	static final int Flag_Compact = 0x00020000;
 
+	// WAV Encoding
+	private static final byte[] RIFF = "RIFF".getBytes(Charset.forName("UTF-8"));
+	private static final byte[] WAVE = "WAVE".getBytes(Charset.forName("UTF-8"));
+	// Note the space after fmt.
+	private static final byte[] fmt = "fmt ".getBytes(Charset.forName("UTF-8"));
+	private static final byte[] data = "data".getBytes(Charset.forName("UTF-8"));
+	private static final int wavHeaderSize = RIFF.length + 4 + WAVE.length + fmt.length + 4 + 2 + 2 + 4 + 4 + 2 + 2 + data.length + 4;
+
 	/** Mapping of music wave bank indexes to their names */
 	static final String[] trackNames = {
 			"01_OverworldNight",
@@ -169,7 +177,10 @@ public class XactExtractor {
 			byte[] audiodata = new byte[PlayRegionLength];
 			buffer.get(audiodata);
 
-			// Terraria's default tracks are only xWma; all wavebanks i have seen uses it
+			// The codecs used by Terraria are currently xWMA and ADPCM.
+			// The xWMA format is not supported by FNA, so it's only used
+			// on Windows. This implementation uses ffmpeg to convert the raw
+			// xWMA data to WAVE; a minified Windows executable is embedded.
 			if (codec == MiniFormatTag_WMA) {
 				// Note that it could still be another codec than xWma,
 				// but that scenario isn't handled here.
@@ -179,7 +190,7 @@ public class XactExtractor {
 				// but it does the job.
 
 				// I do not know if this code outputs valid XWMA files,
-				// but FFMPEG accepts them so it's all right.
+				// but FFMPEG accepts them so it's all right for this usage.
 
 				File xWmaFile = new File(outputDirectory, track + ".wma");
 
@@ -247,6 +258,31 @@ public class XactExtractor {
 				Ffmpeg.convert(xWmaFile, outputFile);
 
 				xWmaFile.delete();
+			} else if (codec == MiniFormatTag_ADPCM) {
+				// Convert ADPCM data to PCM
+				audiodata = new ADPCMConverter().convertToPCM(
+						ByteBuffer.wrap(audiodata), (short) chans, (short) align);
+				// Encode PCM as a WAVE file; note that most magic values used
+				// here were obtained via trial and error, so it might break...
+				ByteBuffer writeBuffer = ByteBuffer.allocate(wavHeaderSize);
+				writeBuffer.order(ByteOrder.LITTLE_ENDIAN);
+				writeBuffer.put(RIFF);
+				writeBuffer.putInt(audiodata.length + 36);
+				writeBuffer.put(WAVE);
+				writeBuffer.put(fmt);
+				writeBuffer.putInt(16);
+				writeBuffer.putShort((short) 1); // format code
+				writeBuffer.putShort((short) chans); // channels
+				writeBuffer.putInt(rate); // blocks per second
+				writeBuffer.putInt(rate * 4); // bytes per second
+				writeBuffer.putShort((short) 4); // data block alignment
+				writeBuffer.putShort((short) 16); // bits per sample
+				writeBuffer.put(data);
+				writeBuffer.putInt(audiodata.length); // dataChunkSize
+				FileOutputStream output = new FileOutputStream(new File(outputDirectory, track + ".wav"));
+				output.write(writeBuffer.array(), writeBuffer.arrayOffset(), writeBuffer.position());
+				output.write(audiodata);
+				output.close();
 			} else {
 				throw new XnbException("unimplemented codec " + codec);
 			}
