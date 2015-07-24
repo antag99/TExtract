@@ -11,6 +11,5 @@ build
 .gradle
 
 ## TExtract
-lib/launch4j*
 *_TerrariaAssets
 *.log

@@ -2,60 +2,9 @@
 buildscript {
   repositories {
     flatDir dirs: "./lib/"
-    jcenter()
   }
   dependencies {
     classpath ":proguard"
-    classpath 'de.undercouch:gradle-download-task:1.2'
-  }
-}
-
-apply plugin: 'de.undercouch.download'
-
-import de.undercouch.gradle.tasks.download.Download
-
-
-// Installs Launch4j into the local directory
-task installLaunch4j << {
-  if (!new File(rootDir, "lib/launch4j/").exists()) {
-    def os = System.getProperty("os.name")
-    if (os.contains("Windows")) {
-      def zip = new File(rootDir, "lib/launch4j-3.7-win32.zip")
-      download {
-        src "https://antag99.github.io/launch4j-3.7-win32.zip"
-        dest zip
-      }
-      copy {
-        from zipTree(zip)
-        into new File(rootDir, "lib")
-      }
-    } else if (os.contains("Linux")) {
-      def tar = new File(rootDir, "lib/launch4j-3.7-linux.tgz")
-      download {
-        src "https://antag99.github.io/launch4j-3.7-linux.tgz"
-        dest tar
-      }
-      copy {
-        from tarTree(tar)
-        into new File(rootDir, "lib")
-      }
-    } else if (os.contains("Mac")) {
-      def tar = new File(rootDir, "lib/launch4j-3.7-macosx-x86-10.8.tgz")
-      download {
-        src "https://antag99.github.io/launch4j-3.7-macosx-x86-10.8.tgz"
-        dest tar
-      }
-      copy {
-        from tarTree(tar)
-        into new File(rootDir, "lib")
-      }
-    } else {
-      throw new RuntimeException("Launch4j is not available for: " + os)
-    }
-
-    // Remove launch4j project files to prevent them from showing up in Eclipse
-    new File(rootDir, "lib/launch4j/.project").delete();
-    new File(rootDir, "lib/launch4j/.classpath").delete();
   }
 }
 
@@ -120,9 +69,20 @@ project(":TExtract") {
   }
 
   // Creates an executable file using Launch4j
-  task launch4j(dependsOn: [ optimizedJar, installLaunch4j ], type: JavaExec) {
+  task launch4j(dependsOn: optimizedJar, type: JavaExec) {
     args "launch4j.xml"
-    classpath new File(rootDir, "lib/launch4j/launch4j.jar")
+    def os = System.getProperty("os.name")
+    def jarFile
+    if (os.contains("Windows")) {
+      jarFile = new File(rootDir, "lib/launch4j/windows/launch4j.jar")
+    } else if (os.contains("Linux")) {
+      jarFile = new File(rootDir, "lib/launch4j/linux/launch4j.jar")
+    } else if (os.contains("Mac")) {
+      jarFile = new File(rootDir, "lib/launch4j/mac/launch4j.jar")
+    } else {
+      throw new RuntimeException("Launch4j is not available for: " + os)
+    }
+    classpath jarFile
     main = "net.sf.launch4j.Main"
   }
 }
