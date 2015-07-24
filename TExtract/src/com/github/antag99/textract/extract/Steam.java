@@ -31,34 +31,30 @@ public final class Steam {
 
 	public static File findTerrariaDirectory() {
 		try {
-			if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+			String os = System.getProperty("os.name");
+			String home = System.getProperty("user.home");
+			if (os.contains("Windows")) {
 				// Check the windows registry for steam installation path
 				try {
 					String steamPath = WinRegistry.readString(WinRegistry.HKEY_CURRENT_USER,
 							"Software\\Valve\\Steam", "SteamPath");
-					File result = seekSteamDirectory(new File(steamPath));
+					File result = seekDirectory(new File(steamPath));
 					if (result != null) {
 						return result;
 					}
-				} catch (Throwable ignored) {
+				} catch (Throwable ex) {
+					// This might fail in the future, as WinRegistry uses internal API
+					ex.printStackTrace();
 				}
-			}
-
-			// Try to find steam parent directories
-			for (File root : File.listRoots()) {
-				// Search inside program & 'game' directories
-				for (File rootChild : root.listFiles()) {
-					if (rootChild.getName().toLowerCase().contains("program") ||
-							rootChild.getName().toLowerCase().contains("game")) {
-						File result = seekSteamParent(rootChild);
-						if (result != null) {
-							return result;
-						}
-					}
+			} else if (os.contains("Linux")) {
+				// Steam directory should be ~/.local/share/Steam
+				File result = seekDirectory(new File(home, "/.local/share/Steam"));
+				if (result != null) {
+					return result;
 				}
-
-				// Try to find steam directory inside root
-				File result = seekSteamParent(root);
+			} else if (os.contains("Mac")) {
+				// Steam directory should be ~/Library/Application Support/Steam
+				File result = seekDirectory(new File(home, "/Library/Application Support/Steam"));
 				if (result != null) {
 					return result;
 				}
@@ -66,15 +62,14 @@ public final class Steam {
 
 			// Try to find relevant environment variables
 			for (Entry<String, String> environmentVariable : System.getenv().entrySet()) {
-				if (environmentVariable.getKey().toLowerCase().contains("terraria") |
+				if (environmentVariable.getKey().toLowerCase().contains("terraria") ||
 						environmentVariable.getKey().toLowerCase().contains("tapi")) {
-
-					File result = seekTerrariaDirectory(new File(environmentVariable.getValue()));
+					File result = seekDirectory(new File(environmentVariable.getValue()));
 					if (result != null) {
 						return result;
 					}
 				} else if (environmentVariable.getKey().toLowerCase().contains("steam")) {
-					File result = seekSteamDirectory(new File(environmentVariable.getValue()));
+					File result = seekDirectory(new File(environmentVariable.getValue()));
 					if (result != null) {
 						return result;
 					}
@@ -89,58 +84,33 @@ public final class Steam {
 		return null;
 	}
 
-	private static File seekSteamParent(File parent) {
-		if (parent == null || !parent.isDirectory()) {
-			return null;
-		}
-
-		File[] parentFiles = parent.listFiles();
-
-		if (parentFiles == null) {
-			return null;
-		}
-
-		for (File child : parentFiles) {
-			if (child.getName().toLowerCase().contains("steam")) {
-				File result = seekSteamDirectory(child);
-				if (result != null) {
-					return result;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	private static File seekSteamDirectory(File steamDirectory) {
+	private static File seekDirectory(File steamDirectory) {
 		if (steamDirectory == null || !steamDirectory.isDirectory()) {
 			return null;
 		}
 
 		File steamApps = new File(steamDirectory, "SteamApps");
-		File common = new File(steamApps, "Common");
-
-		// We might've ended up inside a SteamApps directory
 		if (!steamApps.exists()) {
-			common = new File(steamDirectory, "Common");
+			steamApps = new File(steamDirectory, "steamapps");
 		}
-
+		if (!steamApps.exists()) {
+			steamApps = steamDirectory;
+		}
+		File common = new File(steamApps, "Common");
+		if (!common.exists()) {
+			common = new File(steamApps, "common");
+		}
+		if (!common.exists()) {
+			common = steamDirectory;
+		}
 		File terraria = new File(common, "Terraria");
-
-		return seekTerrariaDirectory(terraria);
-	}
-
-	private static File seekTerrariaDirectory(File terrariaDirectory) {
-		if (terrariaDirectory == null || !terrariaDirectory.isDirectory()) {
+		if (!terraria.exists()) {
+			terraria = steamDirectory;
+		}
+		File content = new File(terraria, "Content");
+		if (!content.exists()) {
 			return null;
 		}
-
-		File contentDirectory = new File(terrariaDirectory, "Content");
-
-		if (contentDirectory.exists()) {
-			return terrariaDirectory;
-		}
-
-		return null;
+		return terraria;
 	}
 }
