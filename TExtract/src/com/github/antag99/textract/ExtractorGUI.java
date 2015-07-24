@@ -158,7 +158,7 @@ class ExtractorGUI {
 		int counter = 0;
 		File outputDirectory;
 		do {
-			outputDirectory = new File(counter + "_TerrariaAssets");
+			outputDirectory = new File(counter++ + "_TerrariaAssets");
 		} while (outputDirectory.exists());
 
 		configurationPanel.setOutputDirectory(outputDirectory);
