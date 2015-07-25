@@ -23,8 +23,8 @@
 package com.github.antag99.textract.extract;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -154,7 +154,7 @@ public class XnbExtractor {
 				throw new XnbException("unexpected surface format: " + surfaceFormat);
 			}
 
-			File output = new File(outputDirectory, baseFileName + ".png");
+			FileOutputStream output = FileUtils.openOutputStream(new File(outputDirectory, baseFileName + ".png"));
 
 			ImageInfo imageInfo = new ImageInfo(width, height, 8, true);
 			PngWriter writer = new PngWriter(output, imageInfo);
@@ -208,16 +208,14 @@ public class XnbExtractor {
 			writeBuffer.put(data);
 			writeBuffer.putInt(dataChunkSize);
 
-			File output = new File(outputDirectory, baseFileName + ".wav");
-
-			OutputStream out = FileUtils.openOutputStream(output);
+			FileOutputStream output = FileUtils.openOutputStream(new File(outputDirectory, baseFileName + ".wav"));
 
 			// Write header
-			out.write(writeBuffer.array(), writeBuffer.arrayOffset(), writeBuffer.position());
+			output.write(writeBuffer.array(), writeBuffer.arrayOffset(), writeBuffer.position());
 			// Write samples
-			out.write(buffer.array(), buffer.arrayOffset() + buffer.position(), dataChunkSize);
+			output.write(buffer.array(), buffer.arrayOffset() + buffer.position(), dataChunkSize);
 
-			out.close();
+			output.close();
 			break;
 		}
 		case "Microsoft.Xna.Framework.Content.SpriteFontReader":

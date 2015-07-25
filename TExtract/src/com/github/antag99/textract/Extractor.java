@@ -138,7 +138,6 @@ public class Extractor {
 			}
 		} else {
 			if (inputFile.getName().endsWith(".xnb")) {
-				outputDirectory.mkdirs();
 				try {
 					xnbExtractor.extract(inputFile, outputDirectory);
 				} catch (IOException ex) {
