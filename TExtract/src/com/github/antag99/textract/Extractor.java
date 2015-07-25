@@ -45,8 +45,8 @@ public class Extractor {
 	private StatusReporter statusReporter = StatusReporter.mutedReporter;
 
 	// Counters used for percentage bars
-	private long processedBytes = 0;
-	private long totalBytes = 0;
+	private long processedFiles = 0;
+	private long totalFiles = 0;
 
 	public Extractor() {
 		xnbExtractor = new XnbExtractor();
@@ -87,7 +87,7 @@ public class Extractor {
 			}
 
 			for (File inputFile : inputFiles)
-				totalBytes += count(inputFile);
+				totalFiles += count(inputFile);
 
 			for (File inputFile : inputFiles)
 				traverse(inputFile, inputFile.getParentFile(), outputDirectory);
@@ -104,14 +104,14 @@ public class Extractor {
 	 * @param file The file to compute the size of
 	 */
 	private int count(File file) {
-		int bytes = 0;
+		int files = 0;
 		if (file.isDirectory()) {
 			for (File child : file.listFiles())
-				bytes += child.length();
+				files += count(child);
 		} else {
-			bytes += file.length();
+			files++;
 		}
-		return bytes;
+		return files;
 	}
 
 	/**
@@ -125,17 +125,14 @@ public class Extractor {
 			relativePath = relativePath.substring(1);
 
 		if (inputFile.isDirectory()) {
-			statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/*");
 			outputDirectory = new File(outputDirectory, inputFile.getName());
 			File[] files = inputFile.listFiles();
 			for (int i = 0; i < files.length; i++) {
+				statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/");
 				File child = files[i];
 
 				statusReporter.reportTaskPercentage((float) i / (float) files.length);
 				statusReporter.reportTaskStatus(child.getName());
-
-				statusReporter.reportOverallPercentage((float) ((double) processedBytes / (double) totalBytes));
-				processedBytes += child.length();
 
 				traverse(child, inputRoot, outputDirectory);
 			}
@@ -148,8 +145,7 @@ public class Extractor {
 					throw new RuntimeException("An unexpected I/O error has occured", ex);
 				}
 			} else if (inputFile.getName().endsWith(".xwb")) {
-				statusReporter.reportOverallStatus("Extracting files from " +
-						(relativePath.length() > 0 ? relativePath + "/" : ""));
+				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
 				try {
 					String directoryName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
 					File directory = new File(outputDirectory, directoryName);
@@ -159,6 +155,8 @@ public class Extractor {
 					throw new RuntimeException("An unexpected I/O error has occured", ex);
 				}
 			}
+			processedFiles++;
+			statusReporter.reportOverallPercentage((float) ((double) processedFiles / (double) totalFiles));
 		}
 	}
 
