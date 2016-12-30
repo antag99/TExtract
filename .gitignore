@@ -13,3 +13,4 @@ build
 ## TExtract
 *_TerrariaAssets
 *.log
+lib/launch4j

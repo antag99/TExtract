@@ -45,6 +45,7 @@ project(":TExtract") {
     // Add the dependencies
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     from new File(buildDir, "VERSION.txt")
+    from new File(buildDir.getParentFile().getParentFile(), "README.md")
     with jar
   }
 
@@ -72,15 +73,9 @@ project(":TExtract") {
   task launch4j(dependsOn: optimizedJar, type: JavaExec) {
     args "launch4j.xml"
     def os = System.getProperty("os.name")
-    def jarFile
-    if (os.contains("Windows")) {
-      jarFile = new File(rootDir, "lib/launch4j/windows/launch4j.jar")
-    } else if (os.contains("Linux")) {
-      jarFile = new File(rootDir, "lib/launch4j/linux/launch4j.jar")
-    } else if (os.contains("Mac")) {
-      jarFile = new File(rootDir, "lib/launch4j/mac/launch4j.jar")
-    } else {
-      throw new RuntimeException("Launch4j is not available for: " + os)
+    def jarFile = new File(rootDir, "lib/launch4j/launch4j.jar")
+    if (!jarFile.exists()) {
+      throw new RuntimeException("put the launch4j distribution in lib/launch4j/")
     }
     classpath jarFile
     main = "net.sf.launch4j.Main"

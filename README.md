@@ -16,12 +16,13 @@ Templates to automatically insert the headers are in eclipse-templates.xml.
 Ensure that 'Automatically add comments for new methods and types' is enabled.
 
 ### License ###
-TExtract is available under the MIT License, but it incorporates some
+TExtract is available under the MIT License, except for some
 Third-Party software available under other licenses:
 
 It incorporates the [PNGJ library](https://github.com/leonbloy/pngj), available under the "Apache License".
 It incorporates [Apache Commons IO](https://commons.apache.org/proper/commons-io/), available under the Apache License, version 2.0.
 It incorporates parts of [FFmpeg](ffmpeg.org), available under the GNU LGPL version 2.1 or later.
+It incorporates [MinLog](https://github.com/EsotericSoftware/minlog), available under the 3-Clause BSD License.
 It incorperates the `WinRegistry.java' file from Apache NPanday, available under the Apache License, version 2.0.
 It also incorporates some files from MonoGame:
  - `LzxDecoder.cs`, dual-licensed under GNU LGPL version 2.1 and MS-PL (LICENSE.MS-PL).
@@ -39,10 +40,6 @@ with the following additional options being passed to `configure`:
 --enable-protocol=file --enable-filter=aresample
 ```
 You may obtain the FFmpeg sources at https://ffmpeg.org/download.html.
-
-The Launch4j distribution is included in this repository. Parts of
-it are available under the 3-Clause BSD License, other parts under the MIT license.
-You may obtain the Launch4j sources at http://launch4j.sourceforge.net/.
 
 The ProGuard distribution is included in this repository. It is avaiable
 under the GNU GPL, version 2.0. You may obtain the ProGuard sources at
