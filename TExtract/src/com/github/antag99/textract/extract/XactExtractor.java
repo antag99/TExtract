@@ -1,6 +1,6 @@
 
 /*******************************************************************************
- * Copyright (C) 2014-2015 Anton Gustafsson
+ * Copyright (C) 2014-2016 Anton Gustafsson
  *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -121,6 +121,8 @@ public class XactExtractor {
 			"37_MartianMadness",
 			"38_MoonLord",
 			"39_GoblinArmy",
+			"40_Sandstorm",
+			"41_OldOnesArmy"
 	};
 
 	public XactExtractor() {
@@ -229,7 +231,31 @@ public class XactExtractor {
 			// The xWMA format is not supported by FNA, so it's only used
 			// on Windows. This implementation uses ffmpeg to convert the raw
 			// xWMA data to WAVE; a minified Windows executable is embedded.
-			if (codec == MiniFormatTag_WMA) {
+			// PCM was introduced for the last tracks in the 1.3.3 update.
+			if (codec == MiniFormatTag_PCM) {
+				ByteBuffer writeBuffer = ByteBuffer.allocate(wavHeaderSize);
+				writeBuffer.order(ByteOrder.LITTLE_ENDIAN);
+				writeBuffer.put(RIFF); // chunk id
+				writeBuffer.putInt(audiodata.length + 36); // chunk size
+				writeBuffer.put(WAVE); // RIFF type
+				writeBuffer.put(fmt); // chunk id
+				writeBuffer.putInt(16); // format header size
+				writeBuffer.putShort((short) 1); // format (PCM)
+				writeBuffer.putShort((short) chans); // channels
+				writeBuffer.putInt(rate); // samples per second
+				int bitsPerSample = 16;
+				int blockAlign = (bitsPerSample / 8) * chans;
+				writeBuffer.putInt(rate * blockAlign); // byte rate/ average bytes per second
+				writeBuffer.putShort((short) blockAlign);
+				writeBuffer.putShort((short) bitsPerSample);
+				writeBuffer.put(data); // chunk id
+				writeBuffer.putInt(audiodata.length); // data size
+
+				FileOutputStream output = new FileOutputStream(new File(outputDirectory, track + ".wav"));
+				output.write(writeBuffer.array(), writeBuffer.arrayOffset(), writeBuffer.position());
+				output.write(audiodata);
+				output.close();
+			} else if (codec == MiniFormatTag_WMA) {
 				// Note that it could still be another codec than xWma,
 				// but that scenario isn't handled here.
 
