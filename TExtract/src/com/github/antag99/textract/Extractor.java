@@ -22,168 +22,223 @@
  ******************************************************************************/
 package com.github.antag99.textract;
 
+import com.github.antag99.textract.extract.XactExtractor;
+import com.github.antag99.textract.extract.XnbExtractor;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.TeeOutputStream;
-
-import com.github.antag99.textract.extract.XactExtractor;
-import com.github.antag99.textract.extract.XnbExtractor;
-
 public class Extractor {
-	private XnbExtractor xnbExtractor;
-	private XactExtractor xactExtractor;
-	private boolean logFileEnabled;
-	private File outputDirectory;
-	private List<File> inputFiles = new ArrayList<File>();
+    private final XnbExtractor xnbExtractor;
+    private final XactExtractor xactExtractor;
+    private final List<File> inputFiles = new ArrayList<File>();
+    private final List<File> filesToExtract = new LinkedList<>();
+    private boolean logFileEnabled;
+    private File outputDirectory;
+    private StatusReporter statusReporter = StatusReporter.mutedReporter;
 
-	private StatusReporter statusReporter = StatusReporter.mutedReporter;
+    // Counters used for percentage bars
+    private long processedFiles = 0;
+    private long totalFiles = 0;
 
-	// Counters used for percentage bars
-	private long processedFiles = 0;
-	private long totalFiles = 0;
+    public Extractor() {
+        xnbExtractor = new XnbExtractor();
+        xactExtractor = new XactExtractor() {
+            @Override
+            protected void status(String status) {
+                statusReporter.reportTaskStatus(status);
+            }
 
-	public Extractor() {
-		xnbExtractor = new XnbExtractor();
-		xactExtractor = new XactExtractor() {
-			@Override
-			protected void status(String status) {
-				statusReporter.reportTaskStatus(status);
-			}
+            @Override
+            protected void percentage(float percentage) {
+                statusReporter.reportTaskPercentage(percentage);
+            }
+        };
+    }
 
-			@Override
-			protected void percentage(float percentage) {
-				statusReporter.reportTaskPercentage(percentage);
-			}
-		};
-	}
+    private void extractFiles() {
+        statusReporter.reportOverallStatus("Extracting files...");
 
-	public void extract() {
-		PrintStream stdOut = System.out;
-		PrintStream stdErr = System.err;
-		FileOutputStream logFile = null;
-		try {
-			File outputDirectory = this.outputDirectory;
-			// If output directory is not specified, default to working directory
-			if (outputDirectory == null) {
-				outputDirectory = new File(".");
-			}
+        final int cores = Runtime.getRuntime().availableProcessors();
+        final int[] threadsRunning = {0};    // One element array such that it can be changed in a thread
 
-			if (logFileEnabled) {
-				try {
-					outputDirectory.mkdirs();
-					logFile = new FileOutputStream(new File(outputDirectory, "TExtract.log"));
-					System.setOut(new PrintStream(new TeeOutputStream(stdOut, logFile)));
-					System.setErr(new PrintStream(new TeeOutputStream(stdErr, logFile)));
-				} catch (IOException ex) {
-					ex.printStackTrace();
-					return;
-				}
-			}
+        System.out.println("DEBUG: There are " + cores + " available threads for extraction.");
 
-			for (File inputFile : inputFiles)
-				totalFiles += count(inputFile);
+        // Extract all files in list
+        while (!this.filesToExtract.isEmpty()) {
 
-			for (File inputFile : inputFiles)
-				traverse(inputFile, inputFile.getParentFile(), outputDirectory);
-		} finally {
-			if (logFileEnabled) {
-				System.setOut(stdOut);
-				System.setErr(stdErr);
-				IOUtils.closeQuietly(logFile);
-			}
-		}
-	}
+            // If cores are available then extract
+            if (threadsRunning[0] < cores) {
+                // Remove file from list
+                final File assetFile = this.filesToExtract.remove(0);
+                // Inc threads counter
+                threadsRunning[0]++;
 
-	/**
-	 * @param file The file to compute the size of
-	 */
-	private int count(File file) {
-		int files = 0;
-		if (file.isDirectory()) {
-			for (File child : file.listFiles())
-				files += count(child);
-		} else {
-			files++;
-		}
-		return files;
-	}
+                // Start a thread with the extraction of the file
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            statusReporter.reportTaskStatus("Extracting " + assetFile.getName());
 
-	/**
-	 * @param inputFile The input file to traverse
-	 * @param inputRoot The root of the input file, for better status messages
-	 * @param outputDirectory The output directory to put extracted files in
-	 */
-	private void traverse(File inputFile, File inputRoot, File outputDirectory) {
-		String relativePath = inputFile.getAbsolutePath().substring(inputRoot.getAbsolutePath().length());
-		if (relativePath.length() > 0)
-			relativePath = relativePath.substring(1);
+                            if (assetFile.getName().endsWith(".xnb")) {
+                                xnbExtractor.extract(assetFile, outputDirectory);
+                            } else if (assetFile.getName().endsWith(".xwb")) {
+                                String directoryName = assetFile.getName().substring(0, assetFile.getName().lastIndexOf('.'));
+                                File directory = new File(outputDirectory, directoryName);
+                                directory.mkdirs();
+                                xactExtractor.extract(assetFile, directory);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("ERROR: Failed to extract " + assetFile.getName());
+                            e.printStackTrace();
+                        }
 
-		if (inputFile.isDirectory()) {
-			outputDirectory = new File(outputDirectory, inputFile.getName());
-			File[] files = inputFile.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				statusReporter.reportOverallStatus("Extracting files from " + relativePath + "/");
-				File child = files[i];
+                        threadsRunning[0]--;    // Decrement thread counter, (used to calculate threads which are left running)
+                        processedFiles++;
 
-				statusReporter.reportTaskPercentage((float) i / (float) files.length);
-				statusReporter.reportTaskStatus(child.getName());
+                        float percentage = (float) ((double) processedFiles / (double) totalFiles);
 
-				traverse(child, inputRoot, outputDirectory);
-			}
-		} else {
-			if (inputFile.getName().endsWith(".xnb")) {
-				try {
-					xnbExtractor.extract(inputFile, outputDirectory);
-				} catch (IOException ex) {
-					throw new RuntimeException("An unexpected I/O error has occured", ex);
-				}
-			} else if (inputFile.getName().endsWith(".xwb")) {
-				statusReporter.reportOverallStatus("Extracting files from " + relativePath);
-				try {
-					String directoryName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
-					File directory = new File(outputDirectory, directoryName);
-					directory.mkdirs();
-					xactExtractor.extract(inputFile, directory);
-				} catch (IOException ex) {
-					throw new RuntimeException("An unexpected I/O error has occured", ex);
-				}
-			}
-			processedFiles++;
-			statusReporter.reportOverallPercentage((float) ((double) processedFiles / (double) totalFiles));
-		}
-	}
+                        statusReporter.reportOverallPercentage(percentage);
+                        statusReporter.reportTaskPercentage(percentage);
+                        System.out.println("INFO: Finished extracting " + assetFile.getName() + " " + percentage + "% complete " + threadsRunning[0] + " threads left running "
+                                + filesToExtract.size() + " items left to process.");
+                    }
+                }, "Extracting " + assetFile.getName())).start();
+            }
+        }
 
-	public StatusReporter getStatusReporter() {
-		return statusReporter;
-	}
+        // Wait for threads to finish - any hanging threads will cause this code to hang
+        while (threadsRunning[0] > 0) {
+            statusReporter.reportOverallStatus("DEBUG: Waiting on " + threadsRunning[0] + " threads to terminate");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
-	public void setStatusReporter(StatusReporter statusReporter) {
-		this.statusReporter = statusReporter;
-	}
+        statusReporter.reportTaskStatus("Finished");
+        statusReporter.reportOverallStatus("Finished");
 
-	public void setOutputDirectory(File outputDirectory) {
-		this.outputDirectory = outputDirectory;
-	}
+        statusReporter.reportOverallPercentage(1);
+        statusReporter.reportTaskPercentage(1);
 
-	public File getOutputDirectory() {
-		return outputDirectory;
-	}
+        statusReporter.reportOverallStatus("Finished extraction");
+    }
 
-	public List<File> getInputFiles() {
-		return inputFiles;
-	}
+    public void extract() {
+        PrintStream stdOut = System.out;
+        PrintStream stdErr = System.err;
+        FileOutputStream logFile = null;
+        try {
+            File outputDirectory = this.outputDirectory;
+            // If output directory is not specified, default to working directory
+            if (outputDirectory == null) {
+                outputDirectory = new File(".");
+            }
 
-	public boolean isLogFileEnabled() {
-		return logFileEnabled;
-	}
+            if (logFileEnabled) {
+                try {
+                    outputDirectory.mkdirs();
+                    logFile = new FileOutputStream(new File(outputDirectory, "TExtract.log"));
+                    System.setOut(new PrintStream(new TeeOutputStream(stdOut, logFile)));
+                    System.setErr(new PrintStream(new TeeOutputStream(stdErr, logFile)));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    return;
+                }
+            }
 
-	public void setLogFileEnabled(boolean logFileEnabled) {
-		this.logFileEnabled = logFileEnabled;
-	}
+            for (File inputFile : inputFiles)
+                traverse(inputFile, inputFile.getParentFile(), outputDirectory);
+            // Gets all files to extract and adds them to the list
+
+            this.totalFiles = this.filesToExtract.size();
+
+            extractFiles(); // Extract the files
+        } finally {
+            if (logFileEnabled) {
+                System.setOut(stdOut);
+                System.setErr(stdErr);
+                IOUtils.closeQuietly(logFile);
+            }
+        }
+    }
+
+    /**
+     * @param file The file to compute the size of
+     */
+    private int count(File file) {
+        int files = 0;
+        if (file.isDirectory()) {
+            for (File child : file.listFiles())
+                files += count(child);
+        } else {
+            files++;
+        }
+        return files;
+    }
+
+    /**
+     * @param inputFile       The input file to traverse
+     * @param inputRoot       The root of the input file, for better status messages
+     * @param outputDirectory The output directory to put extracted files in
+     */
+    private void traverse(File inputFile, File inputRoot, File outputDirectory) {
+        String relativePath = inputFile.getAbsolutePath().substring(inputRoot.getAbsolutePath().length());
+        if (relativePath.length() > 0)
+            relativePath = relativePath.substring(1);
+
+        if (inputFile.isDirectory()) {
+            outputDirectory = new File(outputDirectory, inputFile.getName());
+            File[] files = inputFile.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                statusReporter.reportOverallStatus("Discovering files in " + relativePath + "/");
+                File child = files[i];
+
+                statusReporter.reportTaskPercentage((float) i / (float) files.length);
+                statusReporter.reportTaskStatus("Found " + child.getName());
+
+                traverse(child, inputRoot, outputDirectory);
+            }
+        } else if (inputFile.canRead() && (inputFile.getName().endsWith(".xnb") || inputFile.getName().endsWith(".xwb"))) {
+            this.filesToExtract.add(inputFile);
+        }
+    }
+
+    public StatusReporter getStatusReporter() {
+        return statusReporter;
+    }
+
+    public void setStatusReporter(StatusReporter statusReporter) {
+        this.statusReporter = statusReporter;
+    }
+
+    public File getOutputDirectory() {
+        return outputDirectory;
+    }
+
+    public void setOutputDirectory(File outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public List<File> getInputFiles() {
+        return inputFiles;
+    }
+
+    public boolean isLogFileEnabled() {
+        return logFileEnabled;
+    }
+
+    public void setLogFileEnabled(boolean logFileEnabled) {
+        this.logFileEnabled = logFileEnabled;
+    }
 }
