@@ -36,8 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Extractor {
-    private final XnbExtractor xnbExtractor;
-    private final XactExtractor xactExtractor;
     private final List<File> inputFiles = new ArrayList<File>();
     private final List<File> filesToExtract = new LinkedList<>();
     private boolean logFileEnabled;
@@ -49,18 +47,6 @@ public class Extractor {
     private long totalFiles = 0;
 
     public Extractor() {
-        xnbExtractor = new XnbExtractor();
-        xactExtractor = new XactExtractor() {
-            @Override
-            protected void status(String status) {
-                statusReporter.reportTaskStatus(status);
-            }
-
-            @Override
-            protected void percentage(float percentage) {
-                statusReporter.reportTaskPercentage(percentage);
-            }
-        };
     }
 
     private void extractFiles() {
@@ -89,8 +75,20 @@ public class Extractor {
                             statusReporter.reportTaskStatus("Extracting " + assetFile.getName());
 
                             if (assetFile.getName().endsWith(".xnb")) {
+                                final XnbExtractor xnbExtractor  = new XnbExtractor();;
                                 xnbExtractor.extract(assetFile, outputDirectory);
                             } else if (assetFile.getName().endsWith(".xwb")) {
+                                final XactExtractor xactExtractor = new XactExtractor() {
+                                    @Override
+                                    protected void status(String status) {
+                                        statusReporter.reportTaskStatus(status);
+                                    }
+
+                                    @Override
+                                    protected void percentage(float percentage) {
+                                        statusReporter.reportTaskPercentage(percentage);
+                                    }
+                                };;
                                 String directoryName = assetFile.getName().substring(0, assetFile.getName().lastIndexOf('.'));
                                 File directory = new File(outputDirectory, directoryName);
                                 directory.mkdirs();
