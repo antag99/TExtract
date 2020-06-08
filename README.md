@@ -9,8 +9,7 @@ See [the thread at Terraria forums](https://forums.terraria.org/index.php?thread
 [Gradle](gradle.org) is used for building/testing.
 Fire up a shell and run `./gradlew eclipse`.
 Eclipse project files will be generated, which can then be imported from eclipse.
-[Launch4j] is required to be extracted into `lib/launch4j`,
-you can download the version for your operating system [here](https://sourceforge.net/projects/launch4j/files/launch4j-3/3.12/)
+[Launch4j](https://sourceforge.net/projects/launch4j/files/launch4j-3/3.12/) is required to be extracted into `lib/launch4j`.
 
 To build the project without using an ide you can run `./gradlew build` and `./gradlew jar`.
 
