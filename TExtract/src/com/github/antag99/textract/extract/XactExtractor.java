@@ -169,7 +169,7 @@ public class XactExtractor {
 			"85_Otherworldly_Plantera",
 			"86_Otherworldly_Jungle",
 			"87_Otherworldly_WallOfFlesh",
-			"88_Otherworldly_Hallow",
+			"88_Otherworldly_Hallow"
 	};
 
 	public XactExtractor() {
