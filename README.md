@@ -1,14 +1,17 @@
 ## TExtract [![Build Status](https://travis-ci.org/Antag99/TExtract.svg)](https://travis-ci.org/Antag99/TExtract)
-TExtract is an extractor for [Terraria](http://terraria.org)s content files, which
+TExtract is an extractor for [Terraria](https://terraria.org)s content files, which
 are compiled to the XNB format. Only the things needed to extract Terrarias files
 are implemented, so don't expect it to work for other games without modification.
 
-See [the thread at Terraria forums](http://forums.terraria.org/index.php?threads/textract-extract-terrarias-content-files.937/) for more information.
+See [the thread at Terraria forums](https://forums.terraria.org/index.php?threads/textract-extract-terrarias-content-files.937/) for more information.
 
 ### Building from source ###
 [Gradle](gradle.org) is used for building/testing.
 Fire up a shell and run `./gradlew eclipse`.
 Eclipse project files will be generated, which can then be imported from eclipse.
+[Launch4j](https://sourceforge.net/projects/launch4j/files/launch4j-3/3.12/) is required to be extracted into `lib/launch4j`.
+
+To build the project without using an ide you can run `./gradlew build` and `./gradlew jar`.
 
 ### Contributing ###
 Make sure to include the license headers and to use the eclipse formatter.
@@ -44,4 +47,3 @@ You may obtain the FFmpeg sources at https://ffmpeg.org/download.html.
 The ProGuard distribution is included in this repository. It is avaiable
 under the GNU GPL, version 2.0. You may obtain the ProGuard sources at
 https://sourceforge.net/projects/proguard/.
-
